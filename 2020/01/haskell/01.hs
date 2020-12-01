@@ -17,18 +17,17 @@ subsequencesOfSize n xs = let l = length xs
                                     ([]:next)
                                     ( map (map (x:)) next ++ [[]] )  
 
-day_one :: String -> Int -> Integer -> IO ()
-day_one file group goal = do
-    --read file by lines
-    handle     <- openFile file ReadMode
-    contents   <- hGetContents handle
+day_one :: String -> Int -> Int -> [[Int]]
+day_one input group goal = do 
     --type conversion, then get/filter combinations
-    let list  = map (read::String->Integer) (lines contents)
+    --read file by lines
+    let list  = map (read::String->Int) (lines input) 
         combo = subsequencesOfSize group list
         match = filter (\x -> (sum x) == goal) combo
-        prod  = map (\x -> product x) match
-    print prod
+        prod  = map    (\x -> product x)       match
+    return prod
 
 main = do 
-    day_one "../input.txt" 2 2020
-    day_one "../input.txt" 3 2020
+    input <- readFile "../input.txt"
+    print (day_one input 2 2020)
+    print (day_one input 3 2020)
