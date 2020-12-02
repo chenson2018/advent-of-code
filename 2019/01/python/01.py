@@ -22,4 +22,4 @@ if __name__ == "__main__":
     p2 = sum(map(fuel_for_fuel, input_list))
 
     print(f"Part 1 answer: {p1}")
-    print(f"Part 1 answer: {p2}")
+    print(f"Part 2 answer: {p2}")
