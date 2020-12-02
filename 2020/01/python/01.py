@@ -3,12 +3,7 @@ from itertools import combinations
 from functools import reduce
 from operator  import mul
 
-def summation(file, n, goal):
-    #read input to integer list
-    with open(file, 'r') as f:
-        input_list = f.read().splitlines() 
-        input_list = map(int, input_list)
-
+def summation(input_list, n, goal):
     #combinations of n numbers that sum to goal
     groups     = combinations(input_list, n)
     select     = filter(lambda x: sum(x) == goal, groups)
@@ -20,11 +15,16 @@ def summation(file, n, goal):
 
 if __name__ == "__main__":
 
-    p1 = summation('../input.txt', 
+    #read input to integer list
+    with open("../input.txt", 'r') as f:
+        input_list = f.read().splitlines() 
+        input_list = list(map(int, input_list))
+
+    p1 = summation(input_list, 
                    n = 2, 
                    goal = 2020)
 
-    p2 = summation('../input.txt', 
+    p2 = summation(input_list, 
                    n = 3, 
                    goal = 2020)
 
