@@ -38,10 +38,8 @@ sub position_policy
       my $index_2 = substr($passwd, $high - 1, 1);
 
       #exclusive or check
-      my $check = ($letter eq $index_1) + ($letter eq $index_2);
-
       $match++ 
-         if ($check == 1);
+         if (($letter eq $index_1)^($letter eq $index_2));
       }
    return $match;
 
