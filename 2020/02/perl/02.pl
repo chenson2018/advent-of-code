@@ -9,6 +9,7 @@ sub range_policy
 
    foreach (@lines)
       {
+      #regex to extract variables
       my $pattern = '(\d+)\-(\d+) ([a-z]): ([a-z]+)'; 
       my ($low, $high, $letter, $passwd) = $_ =~ /$pattern/;
       my $count = () = $passwd =~ /\Q$letter/g;
@@ -28,12 +29,15 @@ sub position_policy
 
    foreach (@lines)
       {
+      #regex to extract variables
       my $pattern = '(\d+)\-(\d+) ([a-z]): ([a-z]+)'; 
       my ($low, $high, $letter, $passwd) = $_ =~ /$pattern/;
 
+      #adjusted for indexing at 1
       my $index_1 = substr($passwd, $low  - 1, 1);
       my $index_2 = substr($passwd, $high - 1, 1);
 
+      #exclusive or check
       my $check = ($letter eq $index_1) + ($letter eq $index_2);
 
       $match++ 
