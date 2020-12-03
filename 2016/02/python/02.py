@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import numpy as np
 import itertools
 
 #get coordinates of a square list
