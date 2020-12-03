@@ -45,7 +45,6 @@ class compass:
             return(current)
 
 if __name__ == "__main__":
-   #read input to integer list
    with open("../input.txt", 'r') as f:
       input_list = f.read().strip().split(', ')
 
