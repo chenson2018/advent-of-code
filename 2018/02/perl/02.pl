@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 use Algorithm::Combinatorics qw(combinations);
-use Data::Dumper;
 
 sub checksum
    {
