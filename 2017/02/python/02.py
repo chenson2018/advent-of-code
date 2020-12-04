@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #multiply each number by successive integers
-#continue until we find a match for exceed max in list
+#continue until we find a match or exceed max in list
 def find_divisors(line):
     for num in line:
         div = 2
