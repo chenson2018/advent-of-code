@@ -9,7 +9,7 @@ def summation(input_list, n, goal):
     select     = filter(lambda x: sum(x) == goal, groups)
 
     #multiply groups matching goal summation
-    answer     = map(lambda x: reduce(mul, x), select)
+    answer     = [reduce(mul, x) for x in select]
     
     return list(answer)
 

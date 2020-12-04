@@ -5,7 +5,7 @@ from functools import reduce
 #parse and sort box sides
 def parse(line):
    line = line.strip().split('x')
-   line = list(map(lambda x: int(x), line))
+   line = map(int, line)
    return sorted(line)
 
 #use the fact that sides are sorted

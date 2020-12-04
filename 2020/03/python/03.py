@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
    #problem 2 inputs
    slopes = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
-   tree   = map(lambda x: trees(input_list, *x), slopes)
+   tree   = [trees(input_list, *x) for x in slopes]
    p2     = reduce(mul, tree, 1)
 
    print(f"Part 1 answer: {p1}")
