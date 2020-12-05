@@ -55,8 +55,8 @@ sub main
    chomp(my @input = <$handle>);
    close $handle;
 
-   my $p1 =  checksum(\@input);
-   my $p2 = common(\@input);
+   my $p1 = checksum (\@input);
+   my $p2 = common   (\@input);
 
    print "Part 1 answer: $p1" . "\n";
    print "Part 2 answer: $p2" . "\n";
