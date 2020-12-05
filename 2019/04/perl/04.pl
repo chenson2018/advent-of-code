@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 use List::Util qw/sum/;
 
-#gloabal regex
+#global regex
 $non_decrease = '^(?=\d{6}$)1*2*3*4*5*6*7*8*9*$';
 $repeat       = '(\d)\1';
 
