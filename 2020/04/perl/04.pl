@@ -4,8 +4,7 @@ use List::Util qw/sum/;
 #using positive to match each field
 sub p1_valid
    {
-   my $passport = shift;
-   1 if ($_ =~ m/(?=.*byr)
+   1 if ($_ =~  /(?=.*byr)
                  (?=.*iyr)
                  (?=.*eyr)
                  (?=.*hgt)
@@ -16,7 +15,6 @@ sub p1_valid
 
 sub p2_valid
    {
-   my $passport = shift;
    my $pattern  = '(?=.*byr:(19[2-9]\d|200[0-2]) )'                  .
                   '(?=.*iyr:(201\d|2020) )'                           .
                   '(?=.*eyr:(202\d|2030) )'                            .
@@ -24,7 +22,7 @@ sub p2_valid
                   '(?=.*hcl:#[0-9a-f]{6} )'                              .
                   '(?=.*ecl:(amb|blu|brn|gry|grn|hzl|oth) )'              . 
                   '(?=.*pid:(\d{9})(?!\d))';
-   1 if ($_ =~ m/$pattern/);
+   1 if ($_ =~ /$pattern/);
    }
 
 sub main
