@@ -19,9 +19,6 @@ class intcode:
    def ref(self, address):
        return self.memory[self.get(address)]
 
-   def user_input(self, address, value):
-       self.memory[address] = value
-
    def step(self):
        opcode = self.memory[self.pointer]
        if opcode == 1:
@@ -45,8 +42,8 @@ if __name__ == '__main__':
       input_list = list(map(int, input_list))
 
    program = intcode(input_list)
-   program.user_input(address=1, value= 12)
-   program.user_input(address=2, value=  2)
+   program.update(address=1, value= 12)
+   program.update(address=2, value=  2)
    program.process()
    p1 = program.memory[0]
    print(f"Part 1 answer: {p1}")
@@ -55,8 +52,8 @@ if __name__ == '__main__':
    grid = product(range(100), repeat = 2)
    for noun, verb in grid:
       program = intcode(input_list)
-      program.user_input(address=1, value= noun)
-      program.user_input(address=2, value= verb)
+      program.update(address=1, value= noun)
+      program.update(address=2, value= verb)
       program.process()
       if program.memory[0] == 19690720:
          print(f"Part 2 answer: {100 * noun + verb}")
