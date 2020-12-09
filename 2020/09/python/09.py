@@ -18,11 +18,13 @@ def invalid(input_list, p):
 
 def sum_to(input_list, n):
    size = len(input_list)
+
    #for each index, iterate through sequences starting there
    for (win, index) in product(range(size), repeat = 2):
-      part = input_list[index:index+1+win]
-      #remember to exclude the singleton match
-      if sum(part) == n and n not in part:
+      #exclude the singleton match
+      part = input_list[index:index+2+win]
+
+      if sum(part) == n:
          return min(part)+max(part)
 
 if __name__ == '__main__':
