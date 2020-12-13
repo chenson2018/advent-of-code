@@ -47,8 +47,7 @@ if __name__ == '__main__':
     availible = [int(x) if x != 'x' else x for x in input_list[1].split(',') ]
 
     #part 1
-    specified = [x for x in availible if x != 'x']
-    times = [wait(start, x) for x in specified]
+    times = [wait(start, x) for x in availible if x != 'x']
     p1 = reduce(mul, min(times, key=itemgetter(1)))
 
     #part 2
