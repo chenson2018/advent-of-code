@@ -16,6 +16,9 @@ def bezout(a, b):
         u1, u2 = u2, u1-q*u2
         v1, v2 = v2, v1-q*v2
         r1, r2 = r2, r1-q*r2
+        assert u1*a + v1*b == r1
+        assert u2*a + v2*b == r2
+
 
     if r1 < 0:
         u1, v1, r1 = -u1, -v1, -r1
