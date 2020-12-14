@@ -2,7 +2,7 @@
 import re
 from itertools import product
 
-#convert integer t0 36 bit binary string
+#convert integer to 36 bit binary string
 def bit_36(num):
     return '{0:036b}'.format(num)
 
