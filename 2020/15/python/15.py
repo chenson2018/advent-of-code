@@ -14,7 +14,7 @@ def memory_game(input_list, search):
         previous   = d.get(current)
         d[current] = index
         
-        if previous is not None:
+        if previous:
             current = index-previous
         else:
             current = 0
