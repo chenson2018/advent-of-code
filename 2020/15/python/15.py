@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 def memory_game(input_list, search):
-    #initialize dictionary that stores (number, index)
+    #dict of (number, index)
     #indexing from 1, a mortal sin
     d = { num:index+1 for index, num in enumerate(input_list) } 
 
@@ -10,15 +10,9 @@ def memory_game(input_list, search):
     index   = len(input_list)
 
     while index <= search:
-        
         previous   = d.get(current)
         d[current] = index
-        
-        if previous:
-            current = index-previous
-        else:
-            current = 0
-        
+        current    = index-previous if previous else 0   
         index+=1
     
     #get the key that has the search index as a value
