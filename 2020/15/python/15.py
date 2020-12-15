@@ -3,7 +3,7 @@
 def memory_game(input_list, search):
     #dict of (number, index)
     #indexing from 1, a mortal sin
-    d = { num:index+1 for index, num in enumerate(input_list) } 
+    d = { num:index for index, num in enumerate(input_list, 1) } 
 
     #start with the final starting number
     current = input_list[-1]
