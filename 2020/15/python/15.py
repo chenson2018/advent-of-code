@@ -3,21 +3,21 @@
 def memory_game(input_list, search):
     #initialize dictionary that stores (number, index)
     #indexing from 1, a mortal sin
-    d = dict(zip(input_list, range(1, len(input_list)+1)))
-    
+    d = { num:index+1 for index, num in enumerate(input_list) } 
+
     #start with the final starting number
     current = input_list[-1]
     index   = len(input_list)
 
     while index <= search:
-        try:
-            previous   = d[current]
-            d[current] = index
-            current    = index-previous
-        #KeyError indicates a new number
-        except KeyError:
-            d[current] = index
-            current    = 0
+        
+        previous   = d.get(current)
+        d[current] = index
+        
+        if previous is not None:
+            current = index-previous
+        else:
+            current = 0
         
         index+=1
     
