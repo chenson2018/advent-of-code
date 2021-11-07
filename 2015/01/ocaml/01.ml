@@ -5,16 +5,16 @@
 
 open Core
 
-let p1 line =
-  let position = ref 0 in        
-  for j = 0 to String.length line - 1 do
-    match line.[j] with
-    | '('-> position := !position + 1
-    | ')'-> position := !position - 1
-    | _ -> assert false
-  done;
-  
-  printf "Position: %d \n" !position
+let p1 line = 
+  let action paren = 
+    match paren with
+      | '('->  1
+      | ')'-> -1
+      | _ -> assert false in
+  let total = String.to_list line 
+                |> List.map ~f:action 
+                |> List.fold_left ~f:(+) ~init:0 in
+  printf "Position: %d \n" total
 
 let () =
   let file_to_read = "../input.txt" in
