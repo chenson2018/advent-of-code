@@ -20,7 +20,7 @@ def paper(sides):
 def ribbon(sides):
    ribbon = (
              2*(sides[0]+sides[1]) +
-             reduce(mul, sides, 1)
+             reduce(mul, sides)
             )
 
    return ribbon
