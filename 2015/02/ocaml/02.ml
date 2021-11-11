@@ -19,8 +19,8 @@ let parse_lines (lines: string list):  int list list =
 
 let paper_needed dims = 
   match dims with
-  | s::m::l::_ -> 3*s*m + 2*s*l + 2*m*l
-  | _       -> assert false
+  | s::m::l::[] -> 3*s*m + 2*s*l + 2*m*l
+  | _           -> assert false
 
 (* calculation for part two *)
 
