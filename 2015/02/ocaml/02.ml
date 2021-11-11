@@ -26,8 +26,8 @@ let paper_needed dims =
 
 let ribbon_needed dims = 
   match dims with
-  | s::m::l::_ -> 2*(s+m) + (List.fold_left ~f:( * ) ~init:1 dims)
-  | _       -> assert false
+  | s::m::l::[] -> 2*(s+m) + (List.fold_left ~f:( * ) ~init:1 dims)
+  | _           -> assert false
 
 let () =
   let input  = In_channel.read_lines "../input.txt" in
