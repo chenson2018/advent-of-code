@@ -58,8 +58,8 @@ let () =
   let actions = actions_list input in
   let p1_ans  = List.fold_left ~f:(+) ~init:0 actions in
   (* part 1 could also  take the last element of the following *)
-  let action_l  = cumulative actions in
-  let p2_ans    = index (-1) action_l in
+  let positions = cumulative actions in
+  let p2_ans    = index (-1) positions in
     printf "Part 1 answer: %d\n" p1_ans;
     match p2_ans with
     | None   -> assert false
