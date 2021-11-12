@@ -7,7 +7,10 @@
 open Core
 open Str
 
-(* variant reresenting an individual light and its instruction *)
+(* 
+variant reresenting an action 
+could just use a string in this problem, but trying to be idiomatic
+*)
 type light_action = 
   | Toggle | On | Off
 
