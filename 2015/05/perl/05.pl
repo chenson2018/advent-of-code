@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 
-use Data::Dumper;
 use List::Util qw/sum/;
 
 sub p1_valid
