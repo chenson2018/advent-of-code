@@ -65,11 +65,11 @@ let parse_instruction (s: string) : instruction =
 from https://stackoverflow.com/questions/10893521/how-to-take-product-of-two-list-in-ocaml
 I think this is not tail recursive
 *)
-let cartesian l l' = 
+let cartesian (l: 'a list) (l': 'a list): ('a * 'a) list = 
   List.concat (List.map ~f:(fun e -> List.map ~f:(fun e' -> (e,e')) l') l)
 
 (* from https://stackoverflow.com/questions/243864/what-is-the-ocaml-idiom-equivalent-to-pythons-range-function *)
-let (--) i j = 
+let (--) (i: int) (j: int): int list = 
     let rec aux n acc =
       if n < i then acc else aux (n-1) (n :: acc)
     in aux j []
