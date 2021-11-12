@@ -8,12 +8,10 @@ open Core
 open Str
 
 (* variant reresenting an individual light and its instruction *)
-
 type light_action = 
   | Toggle | On | Off
 
 (* record representing an instruction for a given rectangle *)
-
 type instruction = 
   {
   action: light_action;
@@ -24,7 +22,6 @@ type instruction =
   }
 
 (* calculate on/off given a state and a record with an action *)
-
 let calc_action_p1 (state: bool) (record: instruction) : bool = 
   match record with
   | { x0=_; y0=_; x1=_; y1=_; action = Toggle } -> not state
@@ -38,7 +35,6 @@ let calc_action_p2 (state: int) (record: instruction) : int =
   | { x0=_; y0=_; x1=_; y1=_; action = Off    } -> max 0 (state - 1)
 
 (* convert a string into the light_action type *)
-
 let action_of_string (s: string) : light_action =
   match s with
   | "off" -> Off
@@ -48,7 +44,6 @@ let action_of_string (s: string) : light_action =
 
 
 (* take a string and convert into an instruction record *)
-
 let parse_instruction (s: string) : instruction = 
   let parse (n: int) (g: int): string = 
     Str.matched_group g s 
@@ -67,23 +62,19 @@ let parse_instruction (s: string) : instruction =
 from https://stackoverflow.com/questions/10893521/how-to-take-product-of-two-list-in-ocaml
 I think this is not tail recursive
 *)
-
 let cartesian l l' = 
   List.concat (List.map ~f:(fun e -> List.map ~f:(fun e' -> (e,e')) l') l)
 
 (* from https://stackoverflow.com/questions/243864/what-is-the-ocaml-idiom-equivalent-to-pythons-range-function *)
-
 let (--) i j = 
     let rec aux n acc =
       if n < i then acc else aux (n-1) (n :: acc)
     in aux j []
 
 (* this returns a boolean indicating if an instruction affects a particuliar record *)
-
 let ins_includes (tup: (int * int) ) (ins: instruction): bool = 
   match tup with
   | (x, y) -> (ins.x0 <= x) && (x <= ins.x1) && (ins.y0 <= y) && (y <= ins.y1)
-
 
 (*
 The progrssion is
@@ -99,9 +90,24 @@ let () =
   let input = In_channel.read_lines "../input.txt" in
   let grid = cartesian (0--999) (0--999) in
   let instructions = List.map ~f:parse_instruction input in
-  let light_l = List.map ~f:(fun g -> List.filter ~f:(fun ins -> ins_includes g ins ) instructions) grid in 
-  let states_p1 = List.map ~f:(fun l -> Bool.to_int (List.fold_left ~f:calc_action_p1 ~init:false l)) light_l in
-  let states_p2 = List.map ~f:(fun l -> List.fold_left ~f:calc_action_p2 ~init:0 l) light_l in
+
+  let light_l = List.map ~f:(fun g -> 
+                  List.filter ~f:(fun ins -> 
+                    ins_includes g ins 
+                  ) instructions
+                ) grid 
+  in 
+
+  let states_p1 = List.map ~f:(fun l -> 
+                    Bool.to_int ( List.fold_left ~f:calc_action_p1 ~init:false l )
+                  ) light_l 
+  in
+
+  let states_p2 = List.map ~f:(fun l -> 
+                    List.fold_left ~f:calc_action_p2 ~init:0 l
+                  ) light_l 
+  in
+
   let p1_ans  = List.fold_left ~f:(+) ~init:0 states_p1 in
   let p2_ans  = List.fold_left ~f:(+) ~init:0 states_p2 in
     printf "Part 1 answer: %d\n" p1_ans;
