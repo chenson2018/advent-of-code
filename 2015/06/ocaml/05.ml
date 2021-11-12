@@ -24,7 +24,7 @@ type instruction =
   y1: int;
   }
 
-(* calculate on/off given a state and a record with an action *)
+(* calculate new state given a state and a record with an action *)
 let calc_action_p1 (state: bool) (record: instruction) : bool = 
   match record with
   | { x0=_; y0=_; x1=_; y1=_; action = Toggle } -> not state
