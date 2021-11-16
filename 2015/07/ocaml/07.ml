@@ -107,15 +107,15 @@ let parse_assignment (s: string) : assignment =
 
 (* iterate through assignments an see which are fully resolved *)
 
+let hash_val ht a = 
+  match a with
+  | {lhs = SIGNAL (Val value); rhs = SIGNAL (Var key) } -> Hashtbl.set ~key:key ~data:value ht  
+  | _ -> ()
+
 let () =
   let input = In_channel.read_lines "../input.txt" in
   let assignments = List.map ~f:parse_assignment input in
   let ht = Hashtbl.create (module String) in
-(*  let l1_assignments = List.filter ~f:(fun a -> match a with | {lhs = SIGNAL (Val _); rhs = _ } -> true | _ -> false) assignments in *)
-    List.iter ~f:(fun a -> match a with 
-                            | {lhs = SIGNAL (Val value); rhs = SIGNAL (Var key) } -> Hashtbl.set ~key:key ~data:value ht 
-                            | _ -> () ) assignments;
-(*    Hashtbl.set ~key:("a") ~data:(1) ht; *)
-    Hashtbl.iteri ht ~f:(fun ~key ~data ->
-        print_endline (Printf.sprintf "%s-%d" key data));
-(*    List.iter ~f:(fun a -> print_expr a.lhs) l1_assignments; *)
+    List.iter ~f:(fun a -> hash_val ht a) assignments;
+    Hashtbl.iteri ht ~f:(fun ~key ~data -> print_endline (Printf.sprintf "%s->%d" key data));
+(*    List.iter ~f:(fun a -> print_expr a.lhs) assignments; *)
