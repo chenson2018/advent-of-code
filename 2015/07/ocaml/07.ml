@@ -6,6 +6,7 @@
 
 open Core
 open Str
+open Hashtbl
 
 (* 
 this type represents a singal
@@ -86,7 +87,7 @@ let print_expr (e: expr) : unit =
 
 type assignment = 
   {
-  lhs: expr;
+  mutable lhs: expr;
   rhs: expr;
   }
 
@@ -104,8 +105,17 @@ let parse_assignment (s: string) : assignment =
   {lhs = expr_of_string lhs_s; 
    rhs = expr_of_string rhs_s;}
 
+(* iterate through assignments an see which are fully resolved *)
+
 let () =
   let input = In_channel.read_lines "../input.txt" in
   let assignments = List.map ~f:parse_assignment input in
-  let l1_assignments = List.filter ~f:(fun a -> match a with | {lhs = SIGNAL (Val _); rhs = _ } -> true | _ -> false) assignments in
-    List.iter ~f:(fun a -> print_expr a.lhs) l1_assignments;
+  let ht = Hashtbl.create (module String) in
+(*  let l1_assignments = List.filter ~f:(fun a -> match a with | {lhs = SIGNAL (Val _); rhs = _ } -> true | _ -> false) assignments in *)
+    List.iter ~f:(fun a -> match a with 
+                            | {lhs = SIGNAL (Val value); rhs = SIGNAL (Var key) } -> Hashtbl.set ~key:key ~data:value ht 
+                            | _ -> () ) assignments;
+(*    Hashtbl.set ~key:("a") ~data:(1) ht; *)
+    Hashtbl.iteri ht ~f:(fun ~key ~data ->
+        print_endline (Printf.sprintf "%s-%d" key data));
+(*    List.iter ~f:(fun a -> print_expr a.lhs) l1_assignments; *)
