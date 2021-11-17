@@ -113,7 +113,7 @@ let parse_assignment (s: string) : assignment =
 
 (* iterate through assignments an see which are fully resolved *)
 
-let hash_val ht a =
+let hash_val (ht: (string, int) t) (a: assignment) : unit =
   match a with
   | {l = Signal (Val value); r =  Var key } -> Hashtbl.set ~key:key ~data:value ht
   | _ -> ()
