@@ -112,15 +112,28 @@ let parse_assignment (s: string) : assignment =
    r = Var rhs_s;}
 
 (* iterate through assignments an see which are fully resolved *)
-
 let hash_val (ht: (string, int) t) (a: assignment) : unit =
   match a with
   | {l = Signal (Val value); r =  Var key } -> Hashtbl.set ~key:key ~data:value ht
   | _ -> ()
+
+let replace_hash (ht: (string, int) t ) (a: assignment) : assignment = 
+  match a.l with
+  | Operator {op_lhs = op_lhs'; op = op'; op_rhs = Var var} -> 
+    (match (Hashtbl.find ht var) with
+     | Some x -> {l = Operator {op_lhs = op_lhs'; op = op'; op_rhs = Val x} ; r = a.r}
+     | None   -> a)
+  | Operator {op_lhs = Some (Var var); op = op'; op_rhs = op_rhs'} -> 
+    (match (Hashtbl.find ht var) with
+     | Some x -> {l = Operator {op_lhs = Some (Val x); op = op'; op_rhs = op_rhs'} ; r = a.r}
+     | None   -> a)
+  | _ -> a
 
 let () = 
   let input = In_channel.read_lines "../input.txt" in
   let assignments = List.map ~f:parse_assignment input in
   let ht = Hashtbl.create (module String) in
     List.iter ~f:(fun a -> hash_val ht a) assignments;
+  let a2 = List.map ~f:(fun a -> replace_hash ht a) assignments in
+    List.iter ~f:(fun a -> hash_val ht a) a2;
     Hashtbl.iteri ht ~f:(fun ~key ~data -> print_endline (Printf.sprintf "%s->%d" key data));
