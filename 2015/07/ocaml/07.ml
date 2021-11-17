@@ -23,13 +23,13 @@ type operator =
   op_rhs: signal;
   } 
 
-(* an lhs can be a signal or operator *)
+(* a lhs can be a signal or operator *)
 
 type lhs = 
   | Signal of signal
   | Operator of operator
 
-(* simpliy an operator where all signals are know Val int *)
+(* simplify an operator where all signals are known Val int *)
 
 let simplify_op (op: lhs): lhs = 
   match op with
@@ -40,26 +40,24 @@ let simplify_op (op: lhs): lhs =
   | Operator {op_lhs =         None; op = "NOT"    ; op_rhs = Val r} -> Signal (Val (65535 - r))
   | _ -> op 
 
-let print_lhs (l: lhs): unit = 
-  match l with
-  | Signal (Val x) -> printf "Val: %d\n" x
-  | Signal (Var x) -> printf "Var: %s\n" x
-  | Operator {op_lhs=_; op=o; op_rhs=_} -> printf "Operator %s called\n" o
-
 (* assignment of an operator to a signal *)
 
 type assignment = 
   {
   l: lhs;
-  r: signal; (* should really only be Var of string, but not sure how *)
+  r: signal; (* should onlybe a Var String, but I had trouble getting that here
+                note that this is enfored in the parser function however *)
   }
 
-(* parse lhs *)
+(* I'd prefer to use regex but having trouble with matches being reset *)
+
 let signal_of_string (s: string): signal =
   try
     Val (int_of_string s)
   with
     Failure _ -> Var s
+
+(* parse lhs *)
 
 let lhs_of_string (s: string) : lhs = 
   if ( string_match ( regexp "^[a-z0-9]+$" ) s 0 ) then
@@ -96,7 +94,7 @@ let lhs_of_string (s: string) : lhs =
   else
     assert false
 
-(* read input *)
+(* parse full input lines *)
 
 let parse_assignment (s: string) : assignment = 
   let parse (n: int) (g: int): string =
@@ -111,29 +109,51 @@ let parse_assignment (s: string) : assignment =
   {l = lhs_of_string lhs_s;
    r = Var rhs_s;}
 
-(* iterate through assignments an see which are fully resolved *)
+(* add fully resolved assignments to a hash *)
 let hash_val (ht: (string, int) t) (a: assignment) : unit =
   match a with
   | {l = Signal (Val value); r =  Var key } -> Hashtbl.set ~key:key ~data:value ht
   | _ -> ()
 
+
+(* 
+one iteration of simplification this takes an assignment then
+
+ 1) replaces values already in the hash
+ 2) then simplifies lhs if possible
+
+*)
 let replace_hash (ht: (string, int) t ) (a: assignment) : assignment = 
   match a.l with
   | Operator {op_lhs = op_lhs'; op = op'; op_rhs = Var var} -> 
     (match (Hashtbl.find ht var) with
-     | Some x -> {l = Operator {op_lhs = op_lhs'; op = op'; op_rhs = Val x} ; r = a.r}
+     | Some x -> {l = simplify_op (Operator {op_lhs = op_lhs'; op = op'; op_rhs = Val x} ) ; r = a.r}
      | None   -> a)
   | Operator {op_lhs = Some (Var var); op = op'; op_rhs = op_rhs'} -> 
     (match (Hashtbl.find ht var) with
-     | Some x -> {l = Operator {op_lhs = Some (Val x); op = op'; op_rhs = op_rhs'} ; r = a.r}
+     | Some x -> {l = simplify_op (Operator {op_lhs = Some (Val x); op = op'; op_rhs = op_rhs'}) ; r = a.r}
+     | None   -> a)
+  | Signal (Var var) -> 
+    (match (Hashtbl.find ht var) with
+     | Some x -> {l = simplify_op (Signal (Val x)) ; r = a.r}
      | None   -> a)
   | _ -> a
 
+let advance_state (ht: (string, int) t ) (al: assignment list) : assignment list = 
+    List.iter ~f:(fun a -> hash_val ht a) al;
+    List.map ~f:(fun a -> (replace_hash ht a) ) al
+
+let rec find_wire (ht: (string, int) t ) (al: assignment list) (find: string): int = 
+  match (Hashtbl.find ht find) with
+  | Some x -> x
+  | None   -> find_wire ht (advance_state ht al) find
+
 let () = 
-  let input = In_channel.read_lines "../input.txt" in
+  let input = In_channel.read_lines "../input.txt" in 
   let assignments = List.map ~f:parse_assignment input in
   let ht = Hashtbl.create (module String) in
-    List.iter ~f:(fun a -> hash_val ht a) assignments;
-  let a2 = List.map ~f:(fun a -> replace_hash ht a) assignments in
-    List.iter ~f:(fun a -> hash_val ht a) a2;
-    Hashtbl.iteri ht ~f:(fun ~key ~data -> print_endline (Printf.sprintf "%s->%d" key data));
+  let wire_a = find_wire ht assignments "a" in
+    printf "Part 1 answer: %d\n" wire_a;
+    (* nice way to print the hash *)
+    (* Hashtbl.iteri ht ~f:(fun ~key ~data -> print_endline (Printf.sprintf "%s->%d" key data)); *)
+
