@@ -17,4 +17,6 @@ fn main() {
 
   let p1_ans: i32 = checksums.iter().sum();
   println!("Part 1 answer: {:?}", p1_ans);
+
+  let test = input_vv.iter().map(|v| v.iter().tuple_combinations() );
 }
