@@ -19,11 +19,6 @@ fn main() {
   let p1_ans: i32 = checksums.iter().sum();
   println!("Part 1 answer: {:?}", p1_ans);
 
-//  let test: Vec<i32> = input_vv
-//                              .iter()
-//                              .map(|v| v.iter().tuple_combinations().filter(|(a,b)| a.rem_euclid(**b) == 0 || b.rem_euclid(**a) == 0).map(|(a,b)| a+b) ).collect();
-//
-
   let divisors: Vec<i32> = input_vv
                .iter()
                .map(|v| v.iter()
