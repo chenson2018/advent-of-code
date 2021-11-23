@@ -80,9 +80,9 @@ fn move_back(vp: &Vec<Index>, lin_idx: &i64) -> Index {
   let lin_idx_ahead = sum_index_abs(vp) + 1;                         // linear index of the corner ahead
   let idx_ahead     = sum_index(vp);                                // index of the corner ahead
   let diff          = lin_idx_ahead - lin_idx;                     // find how far ahead we are
-  let ind           = (vp.len().rem_euclid(4) + 1).rem_euclid(4); // get unit vector to take us back
-  let offset        = UNIT_VECS[ind as usize];                    
-  Index { x: (idx_ahead.x + diff*offset.x), y: (idx_ahead.y + diff*offset.y) }
+  let ind           = (vp.len().rem_euclid(4) + 1).rem_euclid(4); // get unit vector pointing back to the direction we came from
+  let offset        = scale(&diff, &UNIT_VECS[ind as usize]);    // scale the vector as needed
+  sum_index(&vec![idx_ahead, offset])                           // add offset to corner index to take us to the target
 }
 
 // given a linear index, find its index
