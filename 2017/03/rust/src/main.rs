@@ -8,7 +8,7 @@ struct Index {
   y: i64,
 }
 
-// every movment along the spiral is proportional to one of these
+// every movement along the spiral is proportional to one of these
 static UNIT_VECS: &'static [Index] = &[ Index { x:  1, y:  0},
                                         Index { x:  0, y:  1},
                                         Index { x: -1, y:  0},
