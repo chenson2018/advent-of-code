@@ -1,8 +1,9 @@
 use std::iter;
+use std::collections::HashMap;
 
 // I refer to the two dimensional coordinates as an index,
 // and the one dimensional index as a linear index
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug, Copy, Hash, Eq, PartialEq)]
 struct Index {
   x: i64,
   y: i64,
@@ -92,10 +93,62 @@ fn get_index(lin_idx: i64) -> Index {
   move_back(&corner_v, &lin_idx)          // move back to the target
 }
 
+// Note: I don't fully understand the type signature here. I was able to figure it out from this compiler message:
+//   error[E0106]: missing lifetime specifier
+//     --> src/main.rs:96:75
+//      = help: this function's return type contains a borrowed value, but the signature does not say whether it is borrowed from `i` or `hash`
+
+// given an Index and a HashMap of previous Index we have seen,
+// find the sum of the surrounding values
+fn sum_adjacent<'a> (i: &'a Index, hash: &'a mut HashMap<Index,i64> ) -> i64 {
+  vec![ hash.get(&Index{ x: i.x + -1, y: i.y + 1}),
+        hash.get(&Index{ x: i.x + -1, y: i.y - 1}),
+        hash.get(&Index{ x: i.x + -1, y: i.y    }),
+        hash.get(&Index{ x: i.x +  1, y: i.y + 1}),
+        hash.get(&Index{ x: i.x +  1, y: i.y - 1}),
+        hash.get(&Index{ x: i.x +  1, y: i.y    }),
+        hash.get(&Index{ x: i.x     , y: i.y + 1}),
+        hash.get(&Index{ x: i.x     , y: i.y - 1})  ]
+  .iter() 
+  .map(|val| { 
+    match val {
+      Some(x) => **x,
+      None    =>   0,
+    }
+  }).sum()
+}
+
+fn p2_calc(input: i64) -> i64 {
+  // hash with given initial value at origin
+  let mut values: HashMap<Index, i64> =  HashMap::from([
+    (Index{ x: 0, y: 0 }, 1)
+  ]);
+
+  // initial values for origin
+  let mut lin_index = 2;   
+  let mut adj: i64  = 0;  // sum of surrounding Index
+  let mut idx: Index;    
+
+  // iterate though the spiral until we have an index where
+  // the value inserted exceeds our input
+  while adj < input {
+    idx = get_index(lin_index);
+    adj = sum_adjacent(&idx, &mut values);
+    values.insert(idx, adj);
+    lin_index += 1;
+  }
+
+  return adj
+}
+
 fn main () {
   // puzzle input, the linear index we are looking for
   // panic if you provide less than one
   let input  = 347991;
   let p1_idx = get_index(input);
   println!("Part 1 answer: {:?}", sum_index_abs(&vec![p1_idx]));
+
+  let p2_ans = p2_calc(input);
+  println!("Part 2 answer: {:?}", p2_ans);
+
 }
