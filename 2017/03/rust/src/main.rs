@@ -87,8 +87,8 @@ fn move_back(vp: &Vec<Index>, lin_idx: &i64) -> Index {
 }
 
 // given a linear index, find its index
-fn get_index(lin_idx: i64) -> Index {
-  let corner   = get_corner_past(&lin_idx); // the number of the corner past our target
+fn get_index(lin_idx: &i64) -> Index {
+  let corner   = get_corner_past(lin_idx); // the number of the corner past our target
   let corner_v = get_corner(&corner);      // vector of indices to get to the corner past our target
   move_back(&corner_v, &lin_idx)          // move back to the target
 }
@@ -132,7 +132,7 @@ fn p2_calc(input: i64) -> i64 {
   // iterate though the spiral until we have an index where
   // the value inserted exceeds our input
   while adj < input {
-    idx = get_index(lin_index);
+    idx = get_index(&lin_index);
     adj = sum_adjacent(&idx, &mut values);
     values.insert(idx, adj);
     lin_index += 1;
@@ -145,7 +145,7 @@ fn main () {
   // puzzle input, the linear index we are looking for
   // panic if you provide less than one
   let input  = 347991;
-  let p1_idx = get_index(input);
+  let p1_idx = get_index(&input);
   println!("Part 1 answer: {:?}", sum_index_abs(&vec![p1_idx]));
 
   let p2_ans = p2_calc(input);
