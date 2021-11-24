@@ -98,8 +98,7 @@ fn get_index(lin_idx: &i64) -> Index {
 //     --> src/main.rs:96:75
 //      = help: this function's return type contains a borrowed value, but the signature does not say whether it is borrowed from `i` or `hash`
 
-// given an Index and a HashMap of previous Index we have seen,
-// find the sum of the surrounding values
+// given an Index and a HashMap of previous Index we have seen, find the sum of the surrounding values
 fn sum_adjacent<'a> (i: &'a Index, hash: &'a mut HashMap<Index,i64> ) -> i64 {
   vec![ hash.get(&Index{ x: i.x + -1, y: i.y + 1}),
         hash.get(&Index{ x: i.x + -1, y: i.y - 1}),
@@ -129,8 +128,7 @@ fn p2_calc(input: i64) -> i64 {
   let mut adj: i64  = 0;  // sum of surrounding Index
   let mut idx: Index;    
 
-  // iterate though the spiral until we have an index where
-  // the value inserted exceeds our input
+  // iterate though the spiral until we have an index where value exceeds our input
   while adj < input {
     idx = get_index(&lin_index);
     adj = sum_adjacent(&idx, &mut values);
@@ -148,6 +146,7 @@ fn main () {
   let p1_idx = get_index(&input);
   println!("Part 1 answer: {:?}", sum_index_abs(&vec![p1_idx]));
 
+  // in part 2, the input is now the value we want the target Index to exceed
   let p2_ans = p2_calc(input);
   println!("Part 2 answer: {:?}", p2_ans);
 
