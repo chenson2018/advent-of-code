@@ -1,6 +1,6 @@
 # a one-liner solution to part one
 # first grep gets the entries on the lhs,
-# second geths the rhs
+# second gets the rhs,
 # then comm finds the difference
 
 comm -23                                            \
