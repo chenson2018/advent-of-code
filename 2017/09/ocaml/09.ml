@@ -10,11 +10,10 @@ let rec remove_exclamation (xs: char list): char list  =
   match xs with
   | [] -> []
   | one :: two :: tl -> (match one with
-                         | '!'        ->        remove_exclamation       tl
-                         | _          -> one :: remove_exclamation (two::tl)
+                         | '!' ->        remove_exclamation       tl
+                         |  _  -> one :: remove_exclamation (two::tl)
                         )
   | last::[] -> [last]
-
 
 (* e.g. abc?def -> def *)
 let rec past_garbage (xs: char list): char list = 
@@ -28,60 +27,45 @@ let rec remove_garbage (xs: char list): char list  =
   match xs with
   | [] -> []
   | one :: tl -> (match one with
-               | '<' ->        remove_garbage ( past_garbage tl )
-               | _   -> one :: remove_garbage                tl
+                  | '<' ->        remove_garbage ( past_garbage tl )
+                  |  _  -> one :: remove_garbage                tl
               )
-
-(* e.g. {,,,} -> {} *)
-let rec remove_extra_comma (xs: char list): char list = 
-  match xs with
-  | '{' :: ',' :: tl -> remove_extra_comma ('{' :: tl)
-  | ',' :: '}' :: tl -> remove_extra_comma ('}' :: tl)
-  | ',' :: ',' :: tl -> remove_extra_comma (       tl)
-  | one :: two :: tl -> one :: two :: (remove_extra_comma tl)
-  | last::[] -> [last]
-  | [] -> []
 
 (* all of the above applied *)
 let parse (xs: char list): char list = 
   xs 
   |> remove_exclamation
   |> remove_garbage 
-  |> remove_extra_comma
-
 
 (* 
-WIP on scoring 
-currently only works if there are no commas
-e.g. {} ->1, {{}} -> 3, etc.
+this logic took a bit to figure out
+every time we encounter a new opening '{' we increment and add that to our list
+after we match it, we deincrment
+we'll be left with a list where the numbers correspond to matching brackets at that depth
+if we add up and divide by two, this is the score we are asked for
+this function assumes that we have only '{', '}', and ',' in a well-formed pattern
 *)
-let rec score (xs: char list) (count: int): int list = 
-  match xs with
-  | [] -> []
-  | '{' :: '{' :: tl -> (count + 1) :: score ('{'::tl) (count + 1)
-  | '{' :: '}' :: tl -> (count    ) :: score ('}'::tl) (count    )
-  | '}' :: '{' :: tl -> (count    ) :: score ('{'::tl) (count    )
-  | '}' :: '}' :: tl -> (count - 1) :: score ('}'::tl) (count - 1)
-  | one :: ',' :: tl -> 0           :: score (one::tl) (count    )
-  | ',' :: one :: tl -> 0           :: score (one::tl) (count    )
-  | last::[] -> [1]
+let score (xs: char list) = 
+  let rec aux (xs: char list) (inc: int): int list = 
+    match xs with
+    | [] -> []
+    | '{' :: '{' :: tl -> (inc + 1) :: aux ('{'::tl) (inc + 1)
+    | '{' :: '}' :: tl -> (inc    ) :: aux ('}'::tl) (inc    )
+    | '}' :: '{' :: tl -> (inc    ) :: aux ('{'::tl) (inc    )
+    | '}' :: '}' :: tl -> (inc - 1) :: aux ('}'::tl) (inc - 1)
+    | one :: ',' :: tl -> 0         :: aux (one::tl) (inc    )
+    | last::[] -> [1] (* count for the very first '{' *)
+    | _ -> assert false
+  in
+  let counts = List.fold_left ~f:(+) ~init:0 (aux xs 1) in
+  counts / 2
   
 let () =
-  let input   = In_channel.read_all "../input.txt" |> String.strip |> String.to_list in
-  (*let input   = "{{{},{},{{}}}}" |> String.to_list in*)
-  let parsed  = parse input in 
+  let input = In_channel.read_all "../input.txt" 
+                |> String.strip 
+                |> String.to_list
+  in
 
-    print_endline "Original:";
-    List.iter ~f:(printf "%c") input;
-    print_endline "";
-    print_endline "";
-
-    print_endline "Parsed:";
-    List.iter ~f:(printf "%c") parsed;
-    print_endline "";
-
-
-  let p1_ans = score parsed 1 in
-     List.iter ~f:(printf "%d ") p1_ans;
-     print_endline "";
-     printf "%d\n" ((List.fold_left ~f:(+) ~init:0 p1_ans) / 2)
+  let parsed  = parse input  in 
+  let p1_ans =  score parsed in
+     printf "Part 1 answer: %d\n" p1_ans;
