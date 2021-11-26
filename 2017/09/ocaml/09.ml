@@ -57,14 +57,18 @@ e.g. {} ->1, {{}} -> 3, etc.
 *)
 let rec score (xs: char list) (count: int): int list = 
   match xs with
-  | '{' :: tl -> (match List.rev tl with
-                  | '}' :: rev_tail -> (count + 1) :: score (List.rev rev_tail) (count + 1)
-                  )
   | [] -> []
-
+  | '{' :: '{' :: tl -> (count + 1) :: score ('{'::tl) (count + 1)
+  | '{' :: '}' :: tl -> (count    ) :: score ('}'::tl) (count    )
+  | '}' :: '{' :: tl -> (count    ) :: score ('{'::tl) (count    )
+  | '}' :: '}' :: tl -> (count - 1) :: score ('}'::tl) (count - 1)
+  | one :: ',' :: tl -> 0           :: score (one::tl) (count    )
+  | ',' :: one :: tl -> 0           :: score (one::tl) (count    )
+  | last::[] -> [1]
+  
 let () =
-  (*let input   = In_channel.read_all "../input.txt" |> String.strip in*)
-  let input   = "{<a>,<a>,<a>,<a>}" |> String.to_list in
+  let input   = In_channel.read_all "../input.txt" |> String.strip |> String.to_list in
+  (*let input   = "{{{},{},{{}}}}" |> String.to_list in*)
   let parsed  = parse input in 
 
     print_endline "Original:";
@@ -77,5 +81,7 @@ let () =
     print_endline "";
 
 
-  let p1_ans = score parsed 0 in
+  let p1_ans = score parsed 1 in
      List.iter ~f:(printf "%d ") p1_ans;
+     print_endline "";
+     printf "%d\n" ((List.fold_left ~f:(+) ~init:0 p1_ans) / 2)
