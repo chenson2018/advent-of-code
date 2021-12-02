@@ -1,4 +1,4 @@
-ADR2_LOW  = $6100
+ADR2_LOW  = $6100 ; this is a static location, but what I really need is to be able to increment this
 ADR2_HIGH = $6101
 
 ADR1_LOW  = $6102
