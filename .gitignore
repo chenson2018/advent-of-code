@@ -1,4 +1,3 @@
 *.swp
 */*/rust/target/
-*/*/6502/build/*.o
-*/*/6502/build/*.bin
+*/*/6502/build/

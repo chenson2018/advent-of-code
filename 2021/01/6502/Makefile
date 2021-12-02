@@ -1,7 +1,7 @@
 all: data-asm assemble-data link-data
 
-data-asm: data.sh
-	./data.sh
+data-asm: build/data.sh
+	./build/data.sh
 
 assemble-data: data.asm
 	ca65 data.asm -o build/data.o
