@@ -51,7 +51,9 @@ let () =
                | {direction = "down";    units = x} -> { state with depth      = d + x}
                | {direction = "up";      units = x} -> { state with depth      = d - x}
                | _                                  -> assert false 
-               ) ~init:initial_state instructions
+               )
+               ~init:initial_state
+               instructions
   in
 
   let p2_end = List.fold_left ~f:(fun ({horizontal = h; depth = d; aim = a} as state) ins -> 
@@ -60,7 +62,9 @@ let () =
                | {direction = "down";    units = x} -> { state with aim        = a + x}
                | {direction = "up";      units = x} -> { state with aim        = a - x}
                | _                                  -> assert false 
-               ) ~init:initial_state instructions
+               ) 
+               ~init:initial_state 
+               instructions
   in
 
   printf "Part 1 answer: %d\n" (p1_end.depth*p1_end.horizontal);
