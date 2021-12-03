@@ -15,6 +15,6 @@ I've found that Github's feature for identifying languages is a bit buggy, so he
 - [Shell](https://github.com/search?q=repo%3Achenson2018%2Fadvent-of-code+extension%3A.sh&type=Code&ref=advsearch&l=&l=)
 - [Haskell](https://github.com/search?q=repo%3Achenson2018%2Fadvent-of-code+extension%3A.hs&type=Code&ref=advsearch&l=&l=)
 - [R](https://github.com/search?q=repo%3Achenson2018%2Fadvent-of-code+extension%3A.R&type=Code&ref=advsearch&l=&l=)
-- [Assembly](https://github.com/search?q=repo%3Achenson2018%2Fadvent-of-code+extension%3A.asm&type=Code&ref=advsearch&l=&l=)
+- [Assembly](https://github.com/search?q=repo%3Achenson2018%2Fadvent-of-code+extension%3A.asm&type=Code&ref=advsearch&l=&l=) (no solutions yet, just starting!)
 
 
