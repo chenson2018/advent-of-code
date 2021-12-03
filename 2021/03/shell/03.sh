@@ -6,8 +6,8 @@ epsilon=""
 
 for ((i=1;i<=$ncol;i++)); do
     counts=$(cut -c $i ../input.txt | sort | uniq -c | sort -rn) # sort and count the ith column
-    gamma+=$(grep -m1 -oP "(\d)$" <<< $counts)                    # append the first line match (will be most often)
-    epsilon+="${counts: -1}"                                      # append the last character (will be least often)
+    gamma+=$(grep -m1 -oP "(\d)$" <<< $counts)                   # append the first line match (will be most often)
+    epsilon+="${counts: -1}"                                     # append the last character (will be least often)
 done
 
 # fun bash binary conversion!
