@@ -1,3 +1,63 @@
+LDA #$00
+STA $6100
+
+LDA #$C7
+STA $6101
+
+LDA #$00
+STA $6102
+
+LDA #$C8
+STA $6103
+
+LDA #$00
+STA $6104
+
+LDA #$D0
+STA $6105
+
+LDA #$00
+STA $6106
+
+LDA #$D2
+STA $6107
+
+LDA #$00
+STA $6108
+
+LDA #$C8
+STA $6109
+
+LDA #$00
+STA $610A
+
+LDA #$CF
+STA $610B
+
+LDA #$00
+STA $610C
+
+LDA #$F0
+STA $610D
+
+LDA #$01
+STA $610E
+
+LDA #$0D
+STA $610F
+
+LDA #$01
+STA $6110
+
+LDA #$04
+STA $6111
+
+LDA #$01
+STA $6112
+
+LDA #$07
+STA $6113
+
 ;ADR2_LOW  = $6100 ; this is a static location, but what I really need is to be able to increment this
 ;ADR2_HIGH = $6101
 ;
@@ -31,11 +91,11 @@ INIT1_HIGH = $61 ; need to move this further to make room for data... but not th
 PTR2_LOW   = $02 
 PTR2_HIGH  = $03 
 
-INIT2_LOW  = $12 
+INIT2_LOW  = $11 
 INIT2_HIGH = $61 
 
-INCREMENT = $01 ; how far back to move each iteration
-ITER      = 20  ; how many iterations
+INCREMENT = $02 ; how far back to move each iteration
+ITER      = 10  ; how many iterations
 
       ; set the top of our range as INIT1_LOW,INIT1_HIGH stored at PTR1_LOW,PTR1_HIGH
       LDA #INIT1_LOW
@@ -55,10 +115,22 @@ ITER      = 20  ; how many iterations
 ; At this point, I am looping through the addresses I want
 ; Currently I am just writing a value to them, but what I really want is to compare them and increment a result address accordingly
 
-LOOP: LDA #$EE        
-      STA (PTR1_LOW),Y    ; store A to the address held in PTR1_LOW,PTR1_HIGH
-      LDA #$DD
-      STA (PTR2_LOW),Y    ; store A to the address held in PTR2_LOW,PTR2_HIGH
+LOOP: SEC
+      CLD
+      LDA (PTR1_LOW),Y
+      SBC (PTR2_LOW),Y
+
+      STA (PTR1_LOW),Y
+
+      LDA #0
+      LDY #1
+      STA (PTR1_LOW),Y
+      LDY #0
+
+      ;LDA #$EE        
+      ;STA (PTR1_LOW),Y    ; store A to the address held in PTR1_LOW,PTR1_HIGH
+      ;LDA #$DD
+      ;STA (PTR2_LOW),Y    ; store A to the address held in PTR2_LOW,PTR2_HIGH
 
       ; deincrement PTR1_LOW,PTR1_HIGH with 16-bit subtraction
       SEC            
