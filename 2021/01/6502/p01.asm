@@ -113,7 +113,9 @@ ITER      = 10  ; how many iterations
       LDY #0
 
 ; At this point, I am looping through the addresses I want
-; Currently I am just writing a value to them, but what I really want is to compare them and increment a result address accordingly
+; Currently I am just taking the difference of the low bit
+; assuming the diff is low, in the high bit I store a zero
+; what I need to add next is a branch on plus that increments a result address
 
 LOOP: SEC
       CLD
