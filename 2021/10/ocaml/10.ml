@@ -47,7 +47,7 @@ let parse_line (xs: char list) : (char list * char list) =
     match left, right with
     | current :: tl_l, next :: tl_r -> (match Hashtbl.find error_score_hash next with
                                         | None -> aux (next::left) tl_r                        (* if not a closing bracket, push to left and continue     *)
-                                        | Some req_open -> if (Char.equal current req_open.c)  (* otherwise, check that it si the correct closing bracket *)
+                                        | Some req_open -> if (Char.equal current req_open.c)  (* otherwise, check that it is the correct closing bracket *)
                                                            then aux tl_l tl_r
                                                            else (left, right))
     | _ -> (left, right)
