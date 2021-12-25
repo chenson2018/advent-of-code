@@ -2,14 +2,14 @@ use std::cell::Cell;
 use std::fs;
 
 #[derive(Debug)]
-struct ALU {
+struct ALU<'a> {
   w: Cell<i64>,
   x: Cell<i64>,
   y: Cell<i64>,
   z: Cell<i64>,
   input: Vec<i64>,
   ptr: Cell<usize>,
-  ins: Vec<Instruction>,
+  ins: &'a Vec<Instruction>,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -34,10 +34,10 @@ enum Instruction {
   Eql(Var, RightOperand),
 }
 
-impl ALU {
+impl ALU<'_> {
 
-  fn new(input: Vec<i64>, ins: Vec<Instruction>) -> ALU {
-    ALU 
+  fn new(input: Vec<i64>, ins: &Vec<Instruction>) -> ALU<'_> {
+    ALU
       { 
         w: Cell::new(0), 
         x: Cell::new(0),
@@ -117,7 +117,7 @@ impl ALU {
       Instruction::Add(var, val) => self.add(var, val),
       Instruction::Mul(var, val) => self.mul(var, val),
       Instruction::Div(var, val) => self.div(var, val),
-      Instruction::Mod(var, val) => self.div(var, val),
+      Instruction::Mod(var, val) => self.r#mod(var, val),
       Instruction::Eql(var, val) => self.eql(var, val),
     }
   }
@@ -180,15 +180,15 @@ fn main() {
                                   .collect();
 
   let mut model: i64 = 99999999999999;
-  let mut input =  digits(model);
-
-  let mut alu = ALU::new(input, ins);
+  let mut alu = ALU::new(digits(model), &ins);
   alu.exec_all();
-  println!("{:?}", alu);
+ 
+  while alu.z.get() != 0 {
+    model = model - 1;
+    alu = ALU::new(digits(model), &ins);
+    alu.exec_all();
+    println!("Model {:?} has z val {:?}", model, alu.z.get());
+  }
 
-
-//  alu = ALU::new(input, ins);
-//  alu.exec_all();
-//  println!("{:?}", alu);
 }
 
