@@ -1,4 +1,5 @@
 use std::cell::Cell;
+use std::fs;
 
 #[derive(Debug)]
 struct ALU {
@@ -129,10 +130,65 @@ impl ALU {
 
 }
 
+impl Instruction {
+
+  fn get_op(op: &str) -> Option<fn(Var, RightOperand) -> Instruction> {
+    match op {
+      "add" => Some(Instruction::Add),
+      "mul" => Some(Instruction::Mul),
+      "div" => Some(Instruction::Div),
+      "mod" => Some(Instruction::Mod),
+      "eql" => Some(Instruction::Eql),
+      _     => None,
+    }
+  }
+
+  fn from_str(s: &str) -> Option<Instruction> {
+    let tokens: Vec<&str> = s.split(' ').collect();
+
+    // note that for variables that I take just the first character... also dont check the register here
+
+    match tokens[..] {
+      [op, var     ] => match op {
+                          "inp" => Some(Instruction::Inp(Var(var.chars().nth(0).unwrap()))),
+                          _     => None,
+                        },
+      [op, var, val] => match Instruction::get_op(op) {
+                          Some(f) => match val.parse::<i64>() { 
+                                       Err(_)  => Some(f(Var(var.chars().nth(0).unwrap()), RightOperand::Var(Var(val.chars().nth(0).unwrap())))),
+                                       Ok(num) => Some(f(Var(var.chars().nth(0).unwrap()), RightOperand::Val(Val(num                        )))),
+                                     }
+                          None    => None
+                        }
+      _              => None,
+    }
+
+  }
+
+}
+
+// See https://stackoverflow.com/a/41536521/11090784
+fn digits(num: i64) -> Vec<i64> {
+  num.to_string().chars().map(|d| d.to_digit(10).unwrap() as i64).collect()
+}
+
 fn main() {
-  let alu = ALU::new(vec![88], vec![Instruction::Inp(Var('x')), Instruction::Mul(Var('x'), RightOperand::Val(Val(-1)))]);
+  let ins: Vec<Instruction> = fs::read_to_string("../input.txt")
+                                  .expect("Unable to read file")
+                                  .lines()
+                                  .map(|s| Instruction::from_str(s).unwrap() )
+                                  .collect();
+
+  let mut model: i64 = 99999999999999;
+  let mut input =  digits(model);
+
+  let mut alu = ALU::new(input, ins);
   alu.exec_all();
   println!("{:?}", alu);
 
-  
+
+//  alu = ALU::new(input, ins);
+//  alu.exec_all();
+//  println!("{:?}", alu);
 }
+
