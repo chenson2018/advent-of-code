@@ -19,4 +19,4 @@ I've found that Github's feature for identifying languages is a bit buggy, so he
 
 # Incomplete Solutions
 
-Note: 2021 Day 16 and the Assembly solution to 2021 Day 1 are incomplete.
+Note: 2021 Day 16/24 and the Assembly solution to 2021 Day 1 are incomplete.
