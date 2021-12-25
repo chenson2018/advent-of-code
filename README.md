@@ -17,4 +17,6 @@ I've found that Github's feature for identifying languages is a bit buggy, so he
 - [R](https://github.com/search?q=repo%3Achenson2018%2Fadvent-of-code+extension%3A.R&type=Code&ref=advsearch&l=&l=)
 - [Assembly](https://github.com/search?q=repo%3Achenson2018%2Fadvent-of-code+extension%3A.asm&type=Code&ref=advsearch&l=&l=) (no solutions yet, just starting!)
 
+# Incomplete Solutions
 
+Note: 2021 Day 16 and the Assembly solution to 2021 Day 1 are incomplete.
