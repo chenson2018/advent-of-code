@@ -42,6 +42,29 @@ let p1_valid (xs: char list) : bool =
   in
   ((three_vowels xs) && (double_letter xs) && (no_forbidden xs))
 
+let p2_valid (xs: char list) : bool = 
+  let distinct_double (xs: char list) : bool =
+    let rec aux ys =
+      match ys with
+      | a :: b :: c :: tl when ((Char.equal a b) && (Char.equal b c)) -> (a::a::[]) :: (aux (a::tl))
+      | a :: b :: tl -> (a::b::[]) :: (aux (b::tl))
+      | _::[] | []   -> []
+    in
+    let twos = aux xs in
+    List.contains_dup ~compare:(Poly.compare) twos
+  in
+
+  let sandwich (xs: char list) : bool = 
+    let rec aux ys =
+      match ys with
+      | a :: b :: c :: tl when (Char.equal a c) -> true
+      | a :: b :: c :: tl                       -> aux (b :: c :: tl)
+      | _::_::[] | _::[] | [] -> false
+    in
+    aux xs
+  in
+  (distinct_double xs) && (sandwich xs)
+
 let () = 
   let input  = "../input.txt" |>
                  In_channel.read_lines |> 
@@ -53,4 +76,10 @@ let () =
                  List.length 
   in
 
+  let p2_ans = input |> 
+                 List.filter ~f:p2_valid |> 
+                 List.length 
+  in
+  
     printf "Part 1 answer: %d\n" p1_ans;
+    printf "Part 2 answer: %d\n" p2_ans;
