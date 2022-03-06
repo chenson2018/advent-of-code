@@ -58,8 +58,8 @@ let p2_valid (xs: char list) : bool =
     let rec aux ys =
       match ys with
       | a :: b :: c :: tl when (Char.equal a c) -> true
-      | a :: b :: c :: tl                       -> aux (b :: c :: tl)
-      | _::_::[] | _::[] | [] -> false
+      | a :: b :: tl                            -> aux (b :: tl)
+      | _::[] | []                              -> false
     in
     aux xs
   in
