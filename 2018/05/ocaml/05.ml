@@ -1,7 +1,6 @@
 #use "topfind"
 #thread
 #require "core.top"
-#require "core.syntax"
 
 open Core
 
