@@ -9,6 +9,7 @@ My goal is to use this as a way to learn new programming languages and have a bi
 I've found that Github's feature for identifying languages is a bit buggy, so here are some links that search by file extension:
 
 - [Python](https://github.com/search?q=repo%3Achenson2018%2Fadvent-of-code+extension%3A.py&type=Code&ref=advsearch&l=&l=)
+- [APL](https://github.com/search?q=repo%3Achenson2018%2Fadvent-of-code+extension%3A.apl&type=Code&ref=advsearch&l=&l=)
 - [OCaml](https://github.com/search?q=repo%3Achenson2018%2Fadvent-of-code+extension%3A.ml&type=Code&ref=advsearch&l=&l=)
 - [Rust](https://github.com/search?q=repo%3Achenson2018%2Fadvent-of-code+extension%3A.rs&type=Code&ref=advsearch&l=&l=)
 - [Perl](https://github.com/search?q=repo%3Achenson2018%2Fadvent-of-code+extension%3A.pl&type=Code&ref=advsearch&l=&l=)
