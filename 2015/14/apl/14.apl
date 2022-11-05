@@ -3,6 +3,5 @@ travel←{(⍵[2]⍴⍵[1]),(⍵[3]⍴0)}
 speed←↑{2503 ⍴ travel ⍵}¨input
 dist←+\speed
 
-
 ⎕←p1_ans←⌈/+/speed
 ⎕←p2_ans←⌈/+/((⍴dist)⍴⌈⌿dist)=dist
