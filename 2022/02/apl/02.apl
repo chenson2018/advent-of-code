@@ -11,11 +11,8 @@ calc←{+⌿{(⊃score/⍺)×⍴⍵}⌸↑⍵}             ⍝ for input, count 
 p1_ans←⎕←calc p1_interp
 
 weak←{(⍸⍵⍷a)⌷1⌽a}                       ⍝ get weakness 
-pick←{(weak⍣(¯1+⊃⍸⍺⍷1⌽x))⍵}             ⍝ interpret an X/Y/Z apply weak as many times as needed
+pick←{(weak⍣(¯1+⊃⍸⍵⍷1⌽x))⍺}             ⍝ interpret an X/Y/Z apply weak as many times as needed
 
-
-p2_repalce←{((pick/⌽⍵)@2)⍵}             ⍝ part 2 data interpretation
-
-p2_interp←p2_repalce¨raw
+p2_interp←{((pick/⍵)@2)⍵}¨raw          ⍝ part 2 data interpretation
 p2_ans←⎕←calc p2_interp
 
