@@ -13,6 +13,6 @@ p1_ans←⎕←calc p1_interp
 weak←{(⍸⍵⍷a)⌷1⌽a}                       ⍝ get weakness 
 pick←{(weak⍣(¯1+⊃⍸⍵⍷1⌽x))⍺}             ⍝ interpret an X/Y/Z apply weak as many times as needed
 
-p2_interp←{((pick/⍵)@2)⍵}¨raw          ⍝ part 2 data interpretation
+p2_interp←{((pick/⍵)@2)⍵}¨raw           ⍝ part 2 data interpretation
 p2_ans←⎕←calc p2_interp
 
