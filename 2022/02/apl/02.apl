@@ -1,15 +1,21 @@
-raw←{(~⍵∊' ')/⍵}¨⊃⎕NGET'../input.txt'1                     ⍝ read input and remove the spaces
-p1_interp←{'C'@{'Z'=⍵}⍵}¨{'B'@{'Y'=⍵}⍵}¨{'A'@{'X'=⍵}⍵}¨raw ⍝ part 1 data interpretation
+a ←'ABC'                                ⍝ useful constants
+x ←'XYZ'
 
-win←{⍺=⍵:3⋄(⊂⍺,⍵)∊'CA' 'BC' 'AB':6⋄0}                      ⍝ component of score for which player won
-score←{(⍸⍵⍷'ABC')+(⍺ win ⍵)}                               ⍝ total score, adding in points for action used
-calc←{+⌿{(⊃score/⍺)×(⍴⍵)}⌸↑⍵}                              ⍝ for input, count how many of each of 9 possible games and score
+raw←{(~⍵∊' ')/⍵}¨⊃⎕NGET'../input.txt'1  ⍝ read input and remove the spaces
+p1_interp←{({(⍸⍵⍷x)⌷a}@2) ⍵}¨raw        ⍝ part 1 data interpretation
+
+win←{⍺=⍵:3⋄(⊂⍺,⍵)∊↓(⊢⌺2)4⍴a:6⋄0}        ⍝ component of score for which player won
+score←{(⍸⍵⍷a)+⍺ win ⍵}                  ⍝ total score, adding in points for action used
+calc←{+⌿{(⊃score/⍺)×⍴⍵}⌸↑⍵}             ⍝ for input, count how many of each of 9 possible games and score
 
 p1_ans←⎕←calc p1_interp
 
-weak←{⍵='A':'B'⋄⍵='B':'C'⋄⍵='C':'A'}                       ⍝ get weakness 
-pick←{⍺='Y':⍵⋄⍺='Z':weak ⍵⋄⍺='X':weak weak ⍵}              ⍝ interpret an X/Y/Z symbol, note weak weak is strong
+weak←{(⍸⍵⍷a)⌷1⌽a}                       ⍝ get weakness 
+pick←{(weak⍣(¯1+⊃⍸⍺⍷1⌽x))⍵}             ⍝ interpret an X/Y/Z apply weak as many times as needed
 
-p2_interp←{((pick/⌽⍵)@2)⍵}¨raw                             ⍝ part 2 data interpretation
+
+p2_repalce←{((pick/⌽⍵)@2)⍵}             ⍝ part 2 data interpretation
+
+p2_interp←p2_repalce¨raw
 p2_ans←⎕←calc p2_interp
 
