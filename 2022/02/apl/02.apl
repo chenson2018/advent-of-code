@@ -113,7 +113,7 @@ p2_ans←⎕←calc p2_interp
 ⍝ │ └──┘ └~─┘   │
 ⍝ └∊────────────┘
 ⍝ 
-⍝ So the compute all the scores we use:
+⍝ So to compute all the scores we use:
 ⍝ 
 ⍝ calc←{+⌿{(⊃score/⍺)×⍴⍵}⌸↑⍵}
 ⍝ 
