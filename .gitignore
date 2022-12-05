@@ -1,3 +1,4 @@
+*.aplo
 *.swp
 */*/rust/target/
 */*/6502/build/
