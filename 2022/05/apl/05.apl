@@ -7,19 +7,11 @@ split←{s←(1+⍺<⍳⍴⍵)⊆⍵⋄1=≢s:s,(⊂'')⋄s}
 foldl←{⎕ML←1⋄↑⍺⍺⍨/(⌽⍵),⊂⍺}
 
 crane←{
-    move←1⌷⍵
-    from←2⌷⍵
-    to←3⌷⍵
-
-    s←move split (⊃from⌷⍺)
-
-    ({⊂((mrev⊃s),⊃⍵)}@to) ((2⌷s)@from) ⍺
+    move from to←⍵
+    add left←move split (⊃from⌷⍺)
+    add←⍺⍺ add
+    ({⊂add,⊃⍵}@to) ((⊂left)@from) ⍺
  }
 
-⍝ I want to pass mrev as ⍺⍺ or ⍵⍵ but I can't quite figure out how
-
-mrev←⌽
-p1_ans←⎕←⊃¨init crane foldl ins
-
-mrev←⊢
-p2_ans←⎕←⊃¨init crane foldl ins
+p1_ans←⎕←⊃¨init (⌽ crane) foldl ins
+p2_ans←⎕←⊃¨init (⊢ crane) foldl ins
