@@ -1,7 +1,7 @@
 ⍝ lmao at this parsing
 raw←⊃⎕NGET'../input.txt'1
 init←{(~⍵∊' ')/⍵}¨↓(⊂¯2+4×⍳9)⌷⍉↑(⊂⍳8)⌷raw
-ins←{⊃⍎¨'move (\d+) from (\d+) to (\d+)'⎕S'\1 \2 \3'⊢⍵}¨{(10<⍳⍴⍵)⊂⍵}raw
+ins←{⊃(//)⎕VFI⊃⍵}¨{(10<⍳⍴⍵)⊂⍵}raw
 
 split←{s←(1+⍺<⍳⍴⍵)⊆⍵⋄1=≢s:s,(⊂'')⋄s}
 foldl←{↑⍺⍺⍨/(⌽⍵),⊂⍺}
