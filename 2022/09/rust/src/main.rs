@@ -36,7 +36,7 @@ impl Knot {
         (self.x - other.x).abs() <= 1 && (self.y - other.y).abs() <= 1
     }
 
-    fn go(&mut self, ins: &Instruction) {
+    fn move_head(&mut self, ins: &Instruction) {
         match ins {
             Instruction::Left => self.x -= 1,
             Instruction::Right => self.x += 1,
@@ -83,14 +83,14 @@ fn knot_trail(instructions: &Vec<(Instruction, usize)>, length: usize) -> usize 
         // we repeat each line's instruction based on the number given
         for _ in 0..*amount {
             // first, move the head
-            knots[0].go(&ins);
+            knots[0].move_head(&ins);
 
             // next, each successive knot follows its leader
             for idx in 1..length {
-                let current_head = knots[idx - 1];
-                knots[idx].follow(&current_head);
+                let leader = knots[idx - 1];
+                knots[idx].follow(&leader);
             }
-            // we record the very last tail
+            // we record the very last knot, the tail
             tail_visited.insert(knots[length - 1]);
         }
     }
