@@ -45,33 +45,26 @@ impl Knot {
         }
     }
 
-    fn neighbourhood(&self) -> Vec<Knot> {
-        // this is tricky, the order matters
-        // first horizontal/vertical, then diagonals
-        const IDX: [(isize, isize); 8] = [
-            (0, -1),
-            (0, 1),
-            (-1, 0),
-            (1, 0),
-            (1, 1),
-            (-1, -1),
-            (1, -1),
-            (-1, 1),
-        ];
-        return IDX
-            .iter()
-            .map(|(x, y)| Knot {
-                x: self.x + *x,
-                y: self.y + *y,
-            })
-            .collect::<Vec<Knot>>();
-    }
-
     fn follow(&mut self, other: &Knot) {
         if !(self == other || self.adjacent(other)) {
-            for item in other.neighbourhood() {
-                if self.adjacent(&item) {
-                    *self = item;
+            const IDX: [(isize, isize); 8] = [
+                (0, -1),
+                (0, 1),
+                (-1, 0),
+                (1, 0),
+                (1, 1),
+                (-1, -1),
+                (1, -1),
+                (-1, 1),
+            ];
+
+            for (x, y) in IDX {
+                let neighbor = Knot {
+                    x: other.x + x,
+                    y: other.y + y,
+                };
+                if self.adjacent(&neighbor) {
+                    *self = neighbor;
                     break;
                 }
             }
