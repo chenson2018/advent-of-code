@@ -47,6 +47,7 @@ impl Knot {
 
     fn follow(&mut self, other: &Knot) {
         if !(self == other || self.adjacent(other)) {
+            // this is tricky, the order matters: first horizontal/vertical, then diagonals
             const IDX: [(isize, isize); 8] = [
                 (0, -1),
                 (0, 1),
