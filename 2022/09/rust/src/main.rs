@@ -8,6 +8,19 @@ enum Instruction {
     Down,
 }
 
+impl Instruction {
+    fn from_str(s: &str) -> Option<(Instruction, usize)> {
+        let (letter, amount) = s.split_once(' ').unwrap();
+        match letter {
+            "L" => Some((Instruction::Left, amount.parse().unwrap())),
+            "R" => Some((Instruction::Right, amount.parse().unwrap())),
+            "U" => Some((Instruction::Up, amount.parse().unwrap())),
+            "D" => Some((Instruction::Down, amount.parse().unwrap())),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Knot {
     x: isize,
@@ -32,58 +45,36 @@ impl Knot {
         }
     }
 
+    fn neighbourhood(&self) -> Vec<Knot> {
+        // this is tricky, the order matters
+        // first horizontal/vertical, then diagonals
+        const IDX: [(isize, isize); 8] = [
+            (0, -1),
+            (0, 1),
+            (-1, 0),
+            (1, 0),
+            (1, 1),
+            (-1, -1),
+            (1, -1),
+            (-1, 1),
+        ];
+        return IDX
+            .iter()
+            .map(|(x, y)| Knot {
+                x: self.x + *x,
+                y: self.y + *y,
+            })
+            .collect::<Vec<Knot>>();
+    }
+
     fn follow(&mut self, other: &Knot) {
         if !(self == other || self.adjacent(other)) {
-            // one of the four options surronding head must be adjacent to tail
-            // is there a nice way I could not have to define all four here, only constructing the
-            // one that is used????
-
-            let bot = Knot {
-                x: other.x,
-                y: other.y - 1,
-            };
-
-            let top = Knot {
-                x: other.x,
-                y: other.y + 1,
-            };
-
-            let left = Knot {
-                x: other.x - 1,
-                y: other.y,
-            };
-
-            let right = Knot {
-                x: other.x + 1,
-                y: other.y,
-            };
-
-            // this is confusing because of the way it mutates self, then checks again, meaning it
-            // always gets past these, even though that's not the original intent. Maybe the issue
-            // with part 2????
-            if self.adjacent(&bot) {
-                *self = bot;
-            } else if self.adjacent(&top) {
-                *self = top;
-            } else if self.adjacent(&left) {
-                *self = left;
-            } else if self.adjacent(&right) {
-                *self = right;
+            for item in other.neighbourhood() {
+                if self.adjacent(&item) {
+                    *self = item;
+                    break;
+                }
             }
-        }
-        //println!("Leader is {:?}, follower is {:?}", other, self);
-    }
-}
-
-impl Instruction {
-    fn from_str(s: &str) -> Option<(Instruction, usize)> {
-        let (letter, amount) = s.split_once(' ').unwrap();
-        match letter {
-            "L" => Some((Instruction::Left, amount.parse().unwrap())),
-            "R" => Some((Instruction::Right, amount.parse().unwrap())),
-            "U" => Some((Instruction::Up, amount.parse().unwrap())),
-            "D" => Some((Instruction::Down, amount.parse().unwrap())),
-            _ => None,
         }
     }
 }
@@ -100,23 +91,19 @@ fn knot_trail(instructions: &Vec<(Instruction, usize)>, length: usize) -> usize 
             // first, move the head
             knots[0].go(&ins);
 
-            // next move each item sequentially
+            // next, each successive knot follows its leader
             for idx in 1..length {
                 let current_head = knots[idx - 1];
                 knots[idx].follow(&current_head);
             }
-            //            println!("After {:?} at: {:?}", ins, knots);
-
             // we record the very last tail
             tail_visited.insert(knots[length - 1]);
         }
-        //    println!("After {:?} {:?} at: {:?}", ins, amount, knots);
     }
     return tail_visited.len();
 }
 
 fn main() {
-    //let instructions: Vec<(Instruction, usize)> = std::fs::read_to_string("../test.txt")
     let instructions: Vec<(Instruction, usize)> = std::fs::read_to_string("../input.txt")
         .expect("Unable to read file")
         .lines()
@@ -126,7 +113,6 @@ fn main() {
     let p1_ans = knot_trail(&instructions, 2);
     println!("Part 1 answer: {}", p1_ans);
 
-    // not working yet
-    //let p2_ans= knot_trail(&instructions, 10);
-    //println!("Part 2 answer: {}", p2_ans);
+    let p2_ans = knot_trail(&instructions, 10);
+    println!("Part 2 answer: {}", p2_ans);
 }
