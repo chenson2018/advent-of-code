@@ -87,15 +87,14 @@ fn main() {
         cpu.process(&ins);
     }
 
-    println!(
-        "Part 1 answer: {:?}",
-        cpu.signal_strength
-    );
+    println!("Part 1 answer: {:?}", cpu.signal_strength);
 
-    println!("Part 2 answer:\n");
+    let lines: Vec<Vec<&str>> = cpu.screen.chunks(40).map(|s| s.into()).collect();
+    let lines_str: String = lines
+        .iter()
+        .map(|l| l.join(""))
+        .collect::<Vec<String>>()
+        .join("\n");
 
-    for i in 0..6 {
-        let start = 40 * i;
-        println!("{}", &cpu.screen[start..start + 40].join(""));
-    }
+    println!("Part 2 answer:\n\n{}", lines_str);
 }
