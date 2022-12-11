@@ -11,8 +11,8 @@ struct Monkey {
 }
 
 fn monkey_rounds(monkeys: &mut Vec<Monkey>, div_three: bool, n: usize) -> u64 {
-    // Because all of the monkeys check for a prime divisibility, taking modulus the product
-    // (since we only care about counts) will preserve the test property
+    // product of moduli will presrve our divisibility test
+    // since we only care about counts, this is sufficient
     let prod = monkeys
         .clone()
         .iter()
