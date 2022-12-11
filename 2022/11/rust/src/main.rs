@@ -14,7 +14,6 @@ fn monkey_rounds(monkeys: &mut Vec<Monkey>, div_three: bool, n: usize) -> u64 {
     // product of moduli will presrve our divisibility test
     // since we only care about counts, this is sufficient
     let prod = monkeys
-        .clone()
         .iter()
         .map(|m| m.test)
         .fold(1, |acc, x| acc * x);
