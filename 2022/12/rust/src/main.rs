@@ -68,7 +68,7 @@ fn main() {
 
     let result = bfs(&start, |p| p.successors(&final_grid), |p| *p == end);
 
-    // this this nodes, so subtract one for paths
+    // this is the nodes, so subtract one for paths
     println!(
         "Part 1 answer: {:?}",
         result.expect("no path found").len() - 1
