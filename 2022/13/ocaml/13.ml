@@ -27,7 +27,7 @@ let rec container_compare (left: Basic.t) (right: Basic.t) : cmp =
   | (`List [], `List [])     -> Eq
   | _ -> assert false
 
-let rec to_pairs (xs: Basic.t list) : (Basic.t * Basic.t) list = 
+let rec to_pairs (xs: 'a list) : ('a * 'a) list = 
   match xs with 
     | one :: two :: tl -> (one,two) :: (to_pairs tl)
     | [] -> []
