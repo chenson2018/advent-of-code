@@ -93,9 +93,9 @@ impl Filled {
 
             match part {
                 Part::Part1 => {
-                    // stop for infinite falling
+                    // stop for infinite falling, return before inserting
                     if pos.y >= limit {
-                        break;
+                        return false;
                     }
                 }
                 Part::Part2 => {
@@ -107,21 +107,11 @@ impl Filled {
             }
         }
 
+        fill.insert(pos);
+
         match part {
-            Part::Part1 => {
-                // fill until something fell past the lowest rock
-                if pos.y >= limit {
-                    return false;
-                } else {
-                    fill.insert(pos);
-                    return true;
-                }
-            }
-            Part::Part2 => {
-                // keep inserting until we fill the starting point
-                fill.insert(pos);
-                return pos.y != self.y;
-            }
+            Part::Part1 => true,            // keep going, no infinite fall yet
+            Part::Part2 => pos.y != self.y, // keep inserting until we fill the starting point
         }
     }
 
