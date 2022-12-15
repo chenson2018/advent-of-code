@@ -93,7 +93,7 @@ fn part1(pairs: &Vec<Pair>, line: isize) -> usize {
         .unwrap();
 
     // tricky double negative:
-    // find all points where every sensor allows an beacon to be placed
+    // find all points where every sensor allows a beacon to be placed
     (left..right)
         .map(|x| {
             pairs
