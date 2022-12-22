@@ -1,7 +1,7 @@
 use std::cmp::max;
 use std::iter;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 enum Orientation {
     Up,
     Right,
@@ -147,6 +147,139 @@ impl Location {
         }
     }
 
+    // super hard-coded for now, based on the particuliar net layout and size
+    fn part2_warp_idx(&self, _grid: &Vec<Vec<Grid>>) -> Self {
+        if (51..=100).contains(&self.x)
+            && (1..=50).contains(&self.y)
+            && self.orient == Orientation::Left
+        {
+            Location {
+                orient: Orientation::Right,
+                x: 1,
+                y: 100 + (51 - self.y),
+            }
+        } else if (51..=100).contains(&self.x)
+            && (1..=50).contains(&self.y)
+            && self.orient == Orientation::Up
+        {
+            Location {
+                orient: Orientation::Right,
+                x: 1,
+                y: self.x + 100,
+            }
+        } else if (101..=150).contains(&self.x)
+            && (1..=50).contains(&self.y)
+            && self.orient == Orientation::Up
+        {
+            Location {
+                orient: Orientation::Up,
+                x: self.x - 100,
+                y: 200,
+            }
+        } else if (101..=150).contains(&self.x)
+            && (1..=50).contains(&self.y)
+            && self.orient == Orientation::Right
+        {
+            Location {
+                orient: Orientation::Left,
+                x: 100,
+                y: 100 + (51 - self.y),
+            }
+        } else if (101..=150).contains(&self.x)
+            && (1..=50).contains(&self.y)
+            && self.orient == Orientation::Down
+        {
+            Location {
+                orient: Orientation::Left,
+                x: 100,
+                y: self.x - 50,
+            }
+        } else if (51..=100).contains(&self.x)
+            && (51..=100).contains(&self.y)
+            && self.orient == Orientation::Right
+        {
+            Location {
+                orient: Orientation::Up,
+                x: self.y + 50,
+                y: 50,
+            }
+        } else if (51..=100).contains(&self.x)
+            && (101..=150).contains(&self.y)
+            && self.orient == Orientation::Right
+        {
+            Location {
+                orient: Orientation::Left,
+                x: 150,
+                y: 150 - (self.y - 1),
+            }
+        } else if (51..=100).contains(&self.x)
+            && (101..=150).contains(&self.y)
+            && self.orient == Orientation::Down
+        {
+            Location {
+                orient: Orientation::Left,
+                x: 50,
+                y: self.x + 100,
+            }
+        } else if (1..=50).contains(&self.x)
+            && (151..=200).contains(&self.y)
+            && self.orient == Orientation::Right
+        {
+            Location {
+                orient: Orientation::Up,
+                x: self.y - 100,
+                y: 150,
+            }
+        } else if (1..=50).contains(&self.x)
+            && (151..=200).contains(&self.y)
+            && self.orient == Orientation::Down
+        {
+            Location {
+                orient: Orientation::Down,
+                x: self.x + 100,
+                y: 1,
+            }
+        } else if (1..=50).contains(&self.x)
+            && (151..=200).contains(&self.y)
+            && self.orient == Orientation::Left
+        {
+            Location {
+                orient: Orientation::Down,
+                x: self.y - 100,
+                y: 1,
+            }
+        } else if (1..=50).contains(&self.x)
+            && (101..=150).contains(&self.y)
+            && self.orient == Orientation::Left
+        {
+            Location {
+                orient: Orientation::Right,
+                x: 51,
+                y: 150 - (self.y - 1),
+            }
+        } else if (1..=50).contains(&self.x)
+            && (101..=150).contains(&self.y)
+            && self.orient == Orientation::Up
+        {
+            Location {
+                orient: Orientation::Right,
+                x: 51,
+                y: self.x + 50,
+            }
+        } else if (51..=100).contains(&self.x)
+            && (51..=100).contains(&self.y)
+            && self.orient == Orientation::Left
+        {
+            Location {
+                orient: Orientation::Down,
+                x: self.y - 50,
+                y: 101,
+            }
+        } else {
+            panic!("No matching warp case!")
+        }
+    }
+
     fn action(&mut self, action: &Action, grid: &Vec<Vec<Grid>>, part: Part) {
         match action {
             Action::RotateRight | Action::RotateLeft => {
@@ -167,13 +300,13 @@ impl Location {
                         Grid::Null => {
                             let warp_next_idx = match part {
                                 Part::Part1 => self.part1_warp_idx(grid),
-                                Part::Part2 => todo!(),
+                                Part::Part2 => self.part2_warp_idx(grid),
                             };
 
                             let warp_grid = warp_next_idx.get_grid(grid);
 
                             match warp_grid {
-                                Grid::Null => panic!("Warped into null!"),
+                                Grid::Null => panic!("Warped into null!, {:?}", warp_next_idx),
                                 Grid::Wall => {
                                     break;
                                 }
@@ -256,8 +389,7 @@ fn pad_grid(grid: &Vec<Vec<Grid>>) -> Vec<Vec<Grid>> {
 }
 
 fn main() {
-    let input = std::fs::read_to_string("../test.txt").expect("Unable to read file");
-    //let input = std::fs::read_to_string("../input.txt").expect("Unable to read file");
+    let input = std::fs::read_to_string("../input.txt").expect("Unable to read file");
 
     let (grid_txt, actions_txt) = input.split_once("\n\n").unwrap();
 
@@ -282,14 +414,16 @@ fn main() {
         orient: Orientation::Right,
     };
 
+    let mut p2_loc = p1_loc.clone();
+
     for action in &actions {
-        println!("");
-        println!("Action: {:?}", action);
         p1_loc.action(&action, &padded_grid, Part::Part1);
-        println!("New location: {:?}", p1_loc);
+        p2_loc.action(&action, &padded_grid, Part::Part2);
     }
 
     let p1_ans = p1_loc.score();
-    println!("Part 1 answer: {}", p1_ans);
+    let p2_ans = p2_loc.score();
 
+    println!("Part 1 answer: {}", p1_ans);
+    println!("Part 2 answer: {}", p2_ans);
 }
