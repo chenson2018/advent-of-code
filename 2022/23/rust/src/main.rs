@@ -56,7 +56,9 @@ impl Elf {
     }
 
     fn any_adj(&self, elves: &HashSet<Elf>, dirs: [Dir; 3]) -> bool {
-        dirs.iter().fold(false, |acc,dir| acc || elves.contains(&self.move_dir(&dir)))
+        dirs.iter().fold(false, |acc, dir| {
+            acc || elves.contains(&self.move_dir(&dir))
+        })
     }
 
     fn tick(&self, elves: &HashSet<Elf>, n: usize) -> (Self, Self) {
