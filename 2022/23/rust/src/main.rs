@@ -55,36 +55,16 @@ impl Elf {
         }
     }
 
-    fn adj_north(&self, elves: &HashSet<Elf>) -> bool {
-        elves.contains(&self.move_dir(&Dir::N))
-            || elves.contains(&self.move_dir(&Dir::NE))
-            || elves.contains(&self.move_dir(&Dir::NW))
-    }
-
-    fn adj_south(&self, elves: &HashSet<Elf>) -> bool {
-        elves.contains(&self.move_dir(&Dir::S))
-            || elves.contains(&self.move_dir(&Dir::SE))
-            || elves.contains(&self.move_dir(&Dir::SW))
-    }
-
-    fn adj_west(&self, elves: &HashSet<Elf>) -> bool {
-        elves.contains(&self.move_dir(&Dir::W))
-            || elves.contains(&self.move_dir(&Dir::NW))
-            || elves.contains(&self.move_dir(&Dir::SW))
-    }
-
-    fn adj_east(&self, elves: &HashSet<Elf>) -> bool {
-        elves.contains(&self.move_dir(&Dir::E))
-            || elves.contains(&self.move_dir(&Dir::NE))
-            || elves.contains(&self.move_dir(&Dir::SE))
+    fn any_adj(&self, elves: &HashSet<Elf>, dirs: [Dir; 3]) -> bool {
+        dirs.iter().fold(false, |acc,dir| acc || elves.contains(&self.move_dir(&dir)))
     }
 
     fn tick(&self, elves: &HashSet<Elf>, n: usize) -> (Self, Self) {
         let checks = [
-            self.adj_north(elves),
-            self.adj_south(elves),
-            self.adj_west(elves),
-            self.adj_east(elves),
+            self.any_adj(elves, [Dir::N, Dir::NE, Dir::NW]),
+            self.any_adj(elves, [Dir::S, Dir::SE, Dir::SW]),
+            self.any_adj(elves, [Dir::W, Dir::NW, Dir::SW]),
+            self.any_adj(elves, [Dir::E, Dir::NE, Dir::SE]),
         ];
 
         let dirs = [Dir::N, Dir::S, Dir::W, Dir::E];
