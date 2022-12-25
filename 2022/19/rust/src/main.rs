@@ -89,7 +89,7 @@ fn max_geodes(nums: Vec<f64>, time: usize, part: Part) -> f64 {
                 problem.add_constraint(constraint!(build_decision[min] == 0));
             }
         } else {
-            // robots at end of minute are previous minute robotsplus build decision
+            // robots at end of minute are previous minute robots plus build decision
             for (robot, build_decision) in zip(robots, build_decisions) {
                 problem.add_constraint(constraint!(
                     robot[min] == robot[min - 1] + build_decision[min]
