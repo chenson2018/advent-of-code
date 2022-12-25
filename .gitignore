@@ -2,3 +2,4 @@
 *.swp
 */*/rust/target/
 */*/6502/build/
+test.txt
