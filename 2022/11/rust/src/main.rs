@@ -11,7 +11,7 @@ struct Monkey {
 }
 
 fn monkey_rounds(monkeys: &mut Vec<Monkey>, div_three: bool, n: usize) -> u64 {
-    // product of moduli will presrve our divisibility test
+    // product of moduli will preserve our divisibility test
     // since we only care about counts, this is sufficient
     let prod = monkeys
         .iter()
