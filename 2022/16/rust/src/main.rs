@@ -1,5 +1,8 @@
+use itertools::Itertools;
 use pathfinding::prelude::dijkstra;
+use rayon::prelude::*;
 use regex::Regex;
+use std::cmp::max;
 use std::collections::{BTreeSet, HashMap};
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -88,7 +91,7 @@ fn transform(map: Vec<Valve>) -> Vec<Valve> {
 }
 
 // assumes that start point is first room in list, I changed order of input to match
-fn part1(transformed_graph: &Vec<Valve>, min: usize) -> usize {
+fn part1(transformed_graph: &Vec<Valve>, min: usize, not_allowed: Vec<&usize>) -> usize {
     let score_offset = 1000;
 
     // each coordinate is (node,time,open valves)
@@ -105,7 +108,11 @@ fn part1(transformed_graph: &Vec<Valve>, min: usize) -> usize {
             transformed_graph
                 .iter()
                 .cloned()
-                .filter(|m| node.connected.contains(&m.name) && !visited.contains(&m.name))
+                .filter(|m| {
+                    node.connected.contains(&m.name)
+                        && !visited.contains(&m.name)
+                        && !not_allowed.iter().any(|x| **x == m.name)
+                })
                 .map(|v| {
                     (
                         (v.clone(), next_time, next_visited.clone()),
@@ -123,11 +130,41 @@ fn part1(transformed_graph: &Vec<Valve>, min: usize) -> usize {
 }
 
 fn main() {
-    //let input = std::fs::read_to_string("../test.txt").expect("Unable to read file");
     let input = std::fs::read_to_string("../input.txt").expect("Unable to read file");
     let init_graph = parse_input(input);
     let transformed_graph = transform(init_graph);
 
-    let p1_ans = part1(&transformed_graph, 30);
+    let p1_ans = part1(&transformed_graph, 30, vec![]);
     println!("Part 1 answer: {}", p1_ans);
+
+    let valves: Vec<usize> = transformed_graph
+        .iter()
+        .filter(|v| v.rate > 0)
+        .map(|v| v.name)
+        .collect();
+    let split = valves.iter().len() / 2;
+
+    let combos: Vec<Vec<&usize>> = valves.iter().combinations(split).collect();
+
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(100)
+        .build_global()
+        .unwrap();
+
+    // brute force goes brrrrrrrrr
+
+    let p2_ans: usize = combos
+        .par_iter()
+        .map(|combo| {
+            let combo_comp: Vec<&usize> = valves
+                .iter()
+                .filter(|x| !combo.iter().any(|y| x == y))
+                .collect();
+            let p: usize = part1(&transformed_graph, 26, combo.to_vec())
+                + part1(&transformed_graph, 26, combo_comp);
+            p
+        })
+        .reduce(|| 0, |x, y| max(x, y));
+
+    println!("Part 2 answer: {:?}", p2_ans);
 }
