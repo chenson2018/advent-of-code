@@ -2,6 +2,9 @@
 pub struct Intcode {
     idx: usize,
     ins: Vec<i64>,
+    output: Vec<i64>,
+    input: Vec<i64>,
+    silent: bool,
 }
 
 enum Opcode {
@@ -76,6 +79,10 @@ impl TryFrom<char> for Mode {
 }
 
 impl Intcode {
+    pub fn output(&self) -> Vec<i64> {
+        self.output.clone()
+    }
+
     fn interpret_mode(&self, mode: Mode, value: i64) -> Result<i64, String> {
         match mode {
             Mode::Position => self.read_mem(value as usize),
@@ -94,7 +101,23 @@ impl Intcode {
     }
 
     pub fn new(ins: Vec<i64>) -> Self {
-        Self { idx: 0, ins }
+        Self {
+            idx: 0,
+            ins,
+            output: Vec::new(),
+            input: Vec::new(),
+            silent : false,
+        }
+    }
+
+    pub fn new_simulation(ins: Vec<i64>, input: Vec<i64>, silent: bool) -> Self {
+        Self {
+            idx: 0,
+            ins,
+            output: Vec::new(),
+            input,
+            silent,
+        }
     }
 
     pub fn read_mem(&self, idx: usize) -> Result<i64, String> {
@@ -140,21 +163,29 @@ impl Intcode {
             let a = self.interpret_mode(a_mode, a_raw)?;
 
             match opcode {
-                Opcode::Input => {
-                    let mut line = String::new();
-                    print!("\n> ");
-                    std::io::Write::flush(&mut std::io::stdout()).expect("IO failure");
-                    let _ = std::io::stdin().read_line(&mut line).expect("IO failure");
-
-                    match line.trim().parse::<i64>() {
-                        Ok(val) => {
-                            self.replace(a_raw as usize, val)?;
-                        }
-                        Err(_) => return Err(format!("{} is not a valid integer.", line)),
+                Opcode::Input => match self.input.pop() {
+                    Some(simulated_input) => {
+                        self.replace(a_raw as usize, simulated_input)?;
                     }
-                }
+                    None => {
+                        let mut line = String::new();
+                        print!("\n> ");
+                        std::io::Write::flush(&mut std::io::stdout()).expect("IO failure");
+                        let _ = std::io::stdin().read_line(&mut line).expect("IO failure");
+
+                        match line.trim().parse::<i64>() {
+                            Ok(val) => {
+                                self.replace(a_raw as usize, val)?;
+                            }
+                            Err(_) => return Err(format!("{} is not a valid integer.", line)),
+                        }
+                    }
+                },
                 Opcode::Output => {
-                    println!("{}", a);
+                    self.output.push(a);
+                    if !self.silent {
+                        println!("{}", a);
+                    }
                 }
                 _ => unreachable!(),
             }

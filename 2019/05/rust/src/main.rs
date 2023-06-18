@@ -9,7 +9,11 @@ fn main() {
         .map(|x| x.parse::<i64>().unwrap())
         .collect();
 
-    let mut intcode = Intcode::new(input.clone());
-
+    let mut intcode = Intcode::new_simulation(input.clone(), vec![1], true);
     intcode.run().ok();
+    println!("Part 1 answer: {:?}", intcode.output());
+
+    let mut intcode = Intcode::new_simulation(input.clone(), vec![5], true);
+    intcode.run().ok();
+    println!("Part 2 answer: {:?}", intcode.output());
 }
