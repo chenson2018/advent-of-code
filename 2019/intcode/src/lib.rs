@@ -141,7 +141,7 @@ impl Intcode {
         }
     }
 
-    pub fn is_halted(&mut self) -> bool {
+    pub fn is_halted(&self) -> bool {
         self.halted
     }
 
