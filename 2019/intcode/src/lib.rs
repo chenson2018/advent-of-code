@@ -1,11 +1,12 @@
 #[derive(Debug)]
 pub struct Intcode {
     idx: usize,
-    ins: Vec<i64>,
+    ins: [i64; 32768],
     output: Vec<i64>,
     input: Vec<i64>,
     silent: bool,
     halted: bool,
+    relative_base: i64,
 }
 
 #[derive(PartialEq)]
@@ -19,6 +20,7 @@ enum Opcode {
     Jf,
     Lt,
     Eq,
+    Rel,
 }
 
 impl Opcode {
@@ -33,6 +35,7 @@ impl Opcode {
             Opcode::Jf => 3,
             Opcode::Lt => 4,
             Opcode::Eq => 4,
+            Opcode::Rel => 2,
         }
     }
 
@@ -57,6 +60,7 @@ impl TryFrom<i64> for Opcode {
             6 => Ok(Opcode::Jf),
             7 => Ok(Opcode::Lt),
             8 => Ok(Opcode::Eq),
+            9 => Ok(Opcode::Rel),
             99 => Ok(Opcode::Halt),
             _ => Err(format!("Opcode {} is invalid", value)),
         }
@@ -66,6 +70,7 @@ impl TryFrom<i64> for Opcode {
 enum Mode {
     Immediate,
     Position,
+    Relative,
 }
 
 impl TryFrom<char> for Mode {
@@ -75,6 +80,7 @@ impl TryFrom<char> for Mode {
         match value {
             '0' => Ok(Mode::Position),
             '1' => Ok(Mode::Immediate),
+            '2' => Ok(Mode::Relative),
             _ => Err(format!("Invalid mode indicator {:?}", value)),
         }
     }
@@ -85,10 +91,22 @@ impl Intcode {
         self.output.clone()
     }
 
-    fn interpret_mode(&self, mode: Mode, value: i64) -> Result<i64, String> {
+    fn interp_param(&self, mode: &Mode, value: i64) -> Result<i64, String> {
         match mode {
             Mode::Position => self.read_mem(value as usize),
             Mode::Immediate => Ok(value),
+            Mode::Relative => self.read_mem((value + self.relative_base) as usize),
+        }
+    }
+
+    // TODO remove assumption that code does not improperly try to write to an immediate value
+
+    fn interp_write(&self, mode: &Mode, value: i64) -> Result<usize, String> {
+        match mode {
+            Mode::Relative => Ok((value + self.relative_base) as usize),
+            _ => Ok(value as usize),
+            //Mode::Position => Ok(value as usize),
+            //Mode::Immediate => Err("Attempt to write to an immediate value.".to_string()),
         }
     }
 
@@ -103,24 +121,32 @@ impl Intcode {
     }
 
     pub fn new(ins: Vec<i64>) -> Self {
+        let mut memory = [0; 32768];
+        memory[..ins.len()].copy_from_slice(&ins[..]);
+
         Self {
             idx: 0,
-            ins,
+            ins: memory,
             output: Vec::new(),
             input: Vec::new(),
             silent: false,
             halted: false,
+            relative_base: 0,
         }
     }
 
     pub fn new_simulation(ins: Vec<i64>, input: Vec<i64>, silent: bool) -> Self {
+        let mut memory = [0; 32768];
+        memory[..ins.len()].copy_from_slice(&ins[..]);
+
         Self {
             idx: 0,
-            ins,
+            ins: memory,
             output: Vec::new(),
             input,
             silent,
             halted: false,
+            relative_base: 0,
         }
     }
 
@@ -154,7 +180,7 @@ impl Intcode {
 
         let filled: Vec<char> = format!("{:0>5}", op_raw).chars().collect();
 
-        let (_, b_mode, a_mode): (Mode, Mode, Mode) = match filled.as_slice() {
+        let (c_mode, b_mode, a_mode): (Mode, Mode, Mode) = match filled.as_slice() {
             [c, b, a, _, _] => ((*c).try_into()?, (*b).try_into()?, (*a).try_into()?),
             _ => unreachable!(),
         };
@@ -170,12 +196,13 @@ impl Intcode {
             }
         } else if width == 2 {
             let a_raw = self.read_offset(1)?;
-            let a = self.interpret_mode(a_mode, a_raw)?;
+            let a = self.interp_param(&a_mode, a_raw)?;
+            let a_write = self.interp_write(&a_mode, a_raw)?;
 
             match opcode {
                 Opcode::Input => match self.input.pop() {
                     Some(simulated_input) => {
-                        self.replace(a_raw as usize, simulated_input)?;
+                        self.replace(a_write, simulated_input)?;
                     }
                     None => {
                         let mut line = String::new();
@@ -185,7 +212,7 @@ impl Intcode {
 
                         match line.trim().parse::<i64>() {
                             Ok(val) => {
-                                self.replace(a_raw as usize, val)?;
+                                self.replace(a_write, val)?;
                             }
                             Err(_) => return Err(format!("{} is not a valid integer.", line)),
                         }
@@ -196,6 +223,9 @@ impl Intcode {
                     if !self.silent {
                         println!("{}", a);
                     }
+                },
+                Opcode::Rel => {
+                    self.relative_base += a;
                 }
                 _ => unreachable!(),
             }
@@ -203,8 +233,8 @@ impl Intcode {
             let a_raw = self.read_offset(1)?;
             let b_raw = self.read_offset(2)?;
 
-            let a = self.interpret_mode(a_mode, a_raw)?;
-            let b = self.interpret_mode(b_mode, b_raw)?;
+            let a = self.interp_param(&a_mode, a_raw)?;
+            let b = self.interp_param(&b_mode, b_raw)?;
 
             match opcode {
                 Opcode::Jt => {
@@ -227,25 +257,26 @@ impl Intcode {
             let a_raw = self.read_offset(1)?;
             let b_raw = self.read_offset(2)?;
 
-            let a = self.interpret_mode(a_mode, a_raw)?;
-            let b = self.interpret_mode(b_mode, b_raw)?;
+            let a = self.interp_param(&a_mode, a_raw)?;
+            let b = self.interp_param(&b_mode, b_raw)?;
 
-            let write_addr = self.read_offset(3)?;
+            let c_raw = self.read_offset(3)?;
+            let c_write = self.interp_write(&c_mode, c_raw)?;
 
             match opcode {
                 Opcode::Add => {
-                    self.replace(write_addr as usize, a + b)?;
+                    self.replace(c_write, a + b)?;
                 }
                 Opcode::Mult => {
-                    self.replace(write_addr as usize, a * b)?;
+                    self.replace(c_write, a * b)?;
                 }
                 Opcode::Lt => {
                     let val = if a < b { 1 } else { 0 };
-                    self.replace(write_addr as usize, val)?;
+                    self.replace(c_write, val)?;
                 }
                 Opcode::Eq => {
                     let val = if a == b { 1 } else { 0 };
-                    self.replace(write_addr as usize, val)?;
+                    self.replace(c_write, val)?;
                 }
                 _ => unreachable!(),
             }
