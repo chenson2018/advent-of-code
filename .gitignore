@@ -1,6 +1,6 @@
 *.aplo
 *.swp
 */*/rust/target/
-*/*/intcode/target/
+*/intcode/target/
 */*/6502/build/
 test.txt
