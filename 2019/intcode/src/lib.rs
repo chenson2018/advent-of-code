@@ -5,8 +5,10 @@ pub struct Intcode {
     output: Vec<i64>,
     input: Vec<i64>,
     silent: bool,
+    halted: bool,
 }
 
+#[derive(PartialEq)]
 enum Opcode {
     Add,
     Mult,
@@ -106,7 +108,8 @@ impl Intcode {
             ins,
             output: Vec::new(),
             input: Vec::new(),
-            silent : false,
+            silent: false,
+            halted: false,
         }
     }
 
@@ -117,6 +120,7 @@ impl Intcode {
             output: Vec::new(),
             input,
             silent,
+            halted: false,
         }
     }
 
@@ -137,16 +141,20 @@ impl Intcode {
         }
     }
 
+    pub fn is_halted(&mut self) -> bool {
+        self.halted
+    }
+
     // TODO fix the width case for better pattern matching
 
-    fn step(&mut self) -> Result<bool, String> {
+    fn step(&mut self) -> Result<(), String> {
         let op_raw = self.read_mem(self.idx)?;
         let opcode: Opcode = op_raw.try_into()?;
         let width = opcode.width();
 
         let filled: Vec<char> = format!("{:0>5}", op_raw).chars().collect();
 
-        let (c_mode, b_mode, a_mode): (Mode, Mode, Mode) = match filled.as_slice() {
+        let (_, b_mode, a_mode): (Mode, Mode, Mode) = match filled.as_slice() {
             [c, b, a, _, _] => ((*c).try_into()?, (*b).try_into()?, (*a).try_into()?),
             _ => unreachable!(),
         };
@@ -155,7 +163,9 @@ impl Intcode {
 
         if width == 1 {
             match opcode {
-                Opcode::Halt => (),
+                Opcode::Halt => {
+                    self.halted = true;
+                }
                 _ => unreachable!(),
             }
         } else if width == 2 {
@@ -247,19 +257,35 @@ impl Intcode {
             self.idx += width;
         }
 
-        match opcode {
-            Opcode::Halt => Ok(true),
-            _ => Ok(false),
+        Ok(())
+    }
+
+    pub fn add_input(&mut self, value: i64) {
+        self.input.push(value)
+    }
+
+    pub fn run_until_output(&mut self) -> Result<i64, String> {
+        loop {
+            let op_raw = self.read_mem(self.idx)?;
+            let opcode: Opcode = op_raw.try_into()?;
+
+            self.step()?;
+
+            if opcode == Opcode::Output || opcode == Opcode::Halt {
+                break;
+            }
+        }
+
+        match self.output().pop() {
+            Some(val) => Ok(val),
+            None => Err("No output to return.".to_string()),
         }
     }
 
-    pub fn run(&mut self) -> Result<bool, String> {
-        loop {
-            let step = self.step();
-            match step {
-                Err(_) | Ok(true) => return step,
-                Ok(false) => (),
-            }
+    pub fn run(&mut self) -> Result<(), String> {
+        while !self.halted {
+            self.step()?;
         }
+        Ok(())
     }
 }
