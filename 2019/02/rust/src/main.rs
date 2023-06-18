@@ -9,7 +9,7 @@ fn main() {
         .map(|x| x.parse::<i64>().unwrap())
         .collect();
 
-    let mut intcode = Intcode::new(input.clone());
+    let mut intcode = Intcode::new(input.clone(), false);
 
     intcode.replace(1, 12).ok();
     intcode.replace(2, 2).ok();
@@ -20,7 +20,7 @@ fn main() {
 
     for noun in 0..100 {
         for verb in 0..100 {
-            let mut intcode = Intcode::new(input.clone());
+            let mut intcode = Intcode::new(input.clone(), false);
             intcode.replace(1, noun).ok();
             intcode.replace(2, verb).ok();
             intcode.run().ok();

@@ -120,7 +120,7 @@ impl Intcode {
         }
     }
 
-    pub fn new(ins: Vec<i64>) -> Self {
+    pub fn new(ins: Vec<i64>, silent: bool) -> Self {
         let mut memory = [0; 32768];
         memory[..ins.len()].copy_from_slice(&ins[..]);
 
@@ -129,7 +129,7 @@ impl Intcode {
             ins: memory,
             output: Vec::new(),
             input: Vec::new(),
-            silent: false,
+            silent,
             halted: false,
             relative_base: 0,
         }
