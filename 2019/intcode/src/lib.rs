@@ -3,7 +3,7 @@ pub struct Intcode {
     idx: usize,
     ins: [i64; 32768],
     output: Vec<i64>,
-    input: Vec<i64>,
+    pub input: Vec<i64>,
     silent: bool,
     halted: bool,
     relative_base: i64,
@@ -157,7 +157,7 @@ impl Intcode {
         }
     }
 
-    fn read_offset(&self, offset: usize) -> Result<i64, String> {
+    pub fn read_offset(&self, offset: usize) -> Result<i64, String> {
         match self.ins.get(self.idx + offset) {
             Some(val) => Ok(*val),
             None => Err(format!(
