@@ -17,7 +17,9 @@ fn main() {
             let mut signal = 0;
 
             for phase in perm {
-                let mut intcode = Intcode::new_simulation(input.clone(), vec![signal, phase], true);
+                let mut intcode = Intcode::new(input.clone());
+                intcode.silent = true;
+                intcode.input = vec![signal, phase];
                 intcode.run().ok();
                 signal = intcode.output().pop().unwrap();
             }
@@ -38,7 +40,9 @@ fn main() {
 
             // first pass that uses the phases
             for p in perm {
-                let mut intcode = Intcode::new_simulation(input.clone(), vec![signal, p], true);
+                let mut intcode = Intcode::new(input.clone());
+                intcode.silent = true;
+                intcode.input = vec![signal, p];
                 signal = intcode.run_until_output().unwrap();
                 amps.push(intcode);
             }

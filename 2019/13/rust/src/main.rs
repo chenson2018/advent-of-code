@@ -1,14 +1,12 @@
 use intcode::Intcode;
-use itertools::Itertools;
 use std::collections::HashMap;
 use std::fmt::Display;
-use std::{thread, time};
 
-use crossterm::event::{poll, read, Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use crossterm::{cursor, execute, terminal, ExecutableCommand};
 use intcode::Message;
-use std::io::{stdout, Write};
+use std::io::stdout;
 
 #[derive(PartialEq)]
 enum Tile {
@@ -115,14 +113,18 @@ fn run_game(intcode: &mut Intcode, game: &mut Game, print: bool) -> Result<(), S
                     match updates.as_slice() {
                         [x, y, tile_int] => {
                             if x == &-1 && y == &0 {
-                                execute!(stdout, cursor::MoveTo(0, 0));
-                                println!("{}", game);
-                                stdout.execute(terminal::Clear(terminal::ClearType::CurrentLine));
-                                println!("Score: {}", tile_int);
+                                if print {
+                                    execute!(stdout, cursor::MoveTo(0, 0));
+                                    println!("{}", game);
+                                    stdout.execute(terminal::Clear(terminal::ClearType::CurrentLine));
+                                    println!("Score: {}", tile_int);
+                                }
                             } else {
                                 game.add_tile(*x, *y, *tile_int)?;
-                                execute!(stdout, cursor::MoveTo(0, 0));
-                                println!("{}\n", game);
+                                if print {
+                                    execute!(stdout, cursor::MoveTo(0, 0));
+                                    println!("{}\n", game);
+                                }
                             };
                         }
                         _ => unreachable!(),
@@ -144,19 +146,21 @@ fn main() {
         .map(|x| x.parse::<i64>().unwrap())
         .collect();
 
-    //    let mut intcode = Intcode::new(input.clone(), true);
-    //    let mut game = Game::new();
-    //    run_game(&mut intcode, &mut game, false).ok();
-    //
-    //    let p1_ans = game
-    //        .tiles
-    //        .iter()
-    //        .filter(|((_, _), tile)| tile == &&Tile::Block)
-    //        .count();
-    //
-    //    println!("Part 1 answer: {}", p1_ans);
+    let mut intcode = Intcode::new(input.clone());
+    intcode.silent = true;
+    let mut game = Game::new();
+    run_game(&mut intcode, &mut game, false).ok();
+    
+    let p1_ans = game
+        .tiles
+        .iter()
+        .filter(|((_, _), tile)| tile == &&Tile::Block)
+        .count();
+    
+    println!("Part 1 answer: {}", p1_ans);
 
-    let mut intcode_p2 = Intcode::new(input.clone(), true);
+    let mut intcode_p2 = Intcode::new(input.clone());
+    intcode_p2.silent = true;
     intcode_p2.replace(0, 2).ok();
     let mut game_p2 = Game::new();
     run_game(&mut intcode_p2, &mut game_p2, true).ok();

@@ -164,12 +164,14 @@ fn main() {
         .map(|x| x.parse::<i64>().unwrap())
         .collect();
 
-    let mut intcode_p1 = Intcode::new(input.clone(), true);
+    let mut intcode_p1 = Intcode::new(input.clone());
+    intcode_p1.silent = true;
     let mut robot_p1 = Robot::new();
     run_robot(&mut robot_p1, &mut intcode_p1);
     println!("Part 1 answer: {}", robot_p1.state.len());
 
-    let mut intcode_p2 = Intcode::new(input, true);
+    let mut intcode_p2 = Intcode::new(input);
+    intcode_p2.silent = true;
     let mut robot_p2 = Robot::new();
     robot_p2.paint(Paint::White);
     run_robot(&mut robot_p2, &mut intcode_p2);

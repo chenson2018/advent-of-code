@@ -4,9 +4,10 @@ pub struct Intcode {
     ins: [i64; 32768],
     output: Vec<i64>,
     pub input: Vec<i64>,
-    silent: bool,
+    pub silent: bool,
     halted: bool,
     relative_base: i64,
+    pub ascii_output: bool,
 }
 
 #[derive(PartialEq)]
@@ -120,7 +121,7 @@ impl Intcode {
         }
     }
 
-    pub fn new(ins: Vec<i64>, silent: bool) -> Self {
+    pub fn new(ins: Vec<i64>) -> Self {
         let mut memory = [0; 32768];
         memory[..ins.len()].copy_from_slice(&ins[..]);
 
@@ -129,24 +130,10 @@ impl Intcode {
             ins: memory,
             output: Vec::new(),
             input: Vec::new(),
-            silent,
+            silent: false,
             halted: false,
             relative_base: 0,
-        }
-    }
-
-    pub fn new_simulation(ins: Vec<i64>, input: Vec<i64>, silent: bool) -> Self {
-        let mut memory = [0; 32768];
-        memory[..ins.len()].copy_from_slice(&ins[..]);
-
-        Self {
-            idx: 0,
-            ins: memory,
-            output: Vec::new(),
-            input,
-            silent,
-            halted: false,
-            relative_base: 0,
+            ascii_output: false,
         }
     }
 
@@ -221,9 +208,13 @@ impl Intcode {
                 Opcode::Output => {
                     self.output.push(a);
                     if !self.silent {
-                        println!("{}", a);
+                        if self.ascii_output {
+                            print!("{}", (a as u8) as char);
+                        } else {
+                            println!("{}", a);
+                        }
                     }
-                },
+                }
                 Opcode::Rel => {
                     self.relative_base += a;
                 }
@@ -302,7 +293,7 @@ impl Intcode {
     }
 
     // If an output, execute before returning
-    // If an input, stop *before* for the external handler 
+    // If an input, stop *before* for the external handler
     // when returning output, refresh the buffer
 
     pub fn run_until_io(&mut self) -> Result<Message, String> {
@@ -319,8 +310,6 @@ impl Intcode {
                 self.step()?;
             }
         }
-
-        
     }
 
     pub fn run_until_output(&mut self) -> Result<i64, String> {
