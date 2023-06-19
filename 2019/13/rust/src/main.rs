@@ -1,4 +1,5 @@
 use intcode::Intcode;
+use itertools::Itertools;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::{thread, time};
@@ -6,6 +7,7 @@ use std::{thread, time};
 use crossterm::event::{poll, read, Event, KeyCode, KeyEvent, KeyModifiers};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use crossterm::{cursor, execute, terminal, ExecutableCommand};
+use intcode::Message;
 use std::io::{stdout, Write};
 
 #[derive(PartialEq)]
@@ -37,7 +39,7 @@ impl Display for Tile {
         match self {
             Tile::Empty => write!(f, " "),
             Tile::Wall => write!(f, "█"),
-            Tile::Block => write!(f, "B"),
+            Tile::Block => write!(f, "□"),
             Tile::HorizontalPaddle => write!(f, "-"),
             Tile::Ball => write!(f, "O"),
         }
@@ -78,50 +80,60 @@ impl Game {
 fn run_game(intcode: &mut Intcode, game: &mut Game, print: bool) -> Result<(), String> {
     let mut stdout = stdout();
     stdout.execute(terminal::Clear(terminal::ClearType::All));
+    let mut out_count = 0;
 
     while !intcode.is_halted() {
-        // check if the current instruction is Input
-        // if so, pass to the key handler
-        if intcode.read_offset(0).unwrap().rem_euclid(10) == 3 {
-            enable_raw_mode().unwrap();
-            if poll(time::Duration::from_millis(10000)).unwrap() {
-                match crossterm::event::read().unwrap() {
-                    Event::Key(KeyEvent {
-                        code: KeyCode::Left,
-                        ..
-                    }) => {
-                        intcode.input = vec![-1];
-                    }
-                    Event::Key(KeyEvent {
-                        code: KeyCode::Right,
-                        ..
-                    }) => {
-                        intcode.input = vec![1];
-                    }
-                    _ => (),
+        let message = intcode.run_until_io()?;
+
+        match message {
+            Message::Input => {
+                enable_raw_mode().unwrap();
+                if poll(time::Duration::from_millis(1000)).unwrap() {
+                    match crossterm::event::read().unwrap() {
+                        Event::Key(KeyEvent {
+                            code: KeyCode::Left,
+                            ..
+                        }) => {
+                            intcode.input = vec![-1];
+                        }
+                        Event::Key(KeyEvent {
+                            code: KeyCode::Right,
+                            ..
+                        }) => {
+                            intcode.input = vec![1];
+                        }
+                        _ => { intcode.input = vec![0]; },
+                    };
+                } else {
+                    intcode.input = vec![0];
                 };
-            } else {
-                intcode.input = vec![0];
-            };
-            disable_raw_mode().unwrap();
-        };
-
-        let x = intcode.run_until_output()?;
-        let y = intcode.run_until_output()?;
-        let tile_int = intcode.run_until_output()?;
-
-        if x == -1 && y == 0 {
-            println!("Score: {}", tile_int);
-        } else {
-            game.add_tile(x, y, tile_int)?;
-        };
-
-        execute!(stdout, cursor::MoveTo(0, 0));
-
-        if print {
-            println!("{}", game);
-        };
+                disable_raw_mode().unwrap();
+                intcode.step()?;
+            }
+            Message::Output => {
+                out_count += 1;
+                if (out_count % 3) == 0 {
+                    let updates = intcode.flush_output();
+                    match updates.as_slice() {
+                        [x, y, tile_int] => {
+                            if x == &-1 && y == &0 {
+                                execute!(stdout, cursor::MoveTo(0, 0));
+                                println!("{}", game);
+                                stdout.execute(terminal::Clear(terminal::ClearType::CurrentLine));
+                                println!("Score: {}", tile_int);
+                            } else {
+                                game.add_tile(*x, *y, *tile_int)?;
+                                execute!(stdout, cursor::MoveTo(0, 0));
+                                println!("{}\n", game);
+                            };
+                        }
+                        _ => unreachable!(),
+                    }
+                }
+            }
+        }
     }
+
     Ok(())
 }
 

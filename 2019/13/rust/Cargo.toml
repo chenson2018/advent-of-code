@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 crossterm = "0.26.1"
 intcode = { path = "../../intcode" }
+itertools = "0.10.5"

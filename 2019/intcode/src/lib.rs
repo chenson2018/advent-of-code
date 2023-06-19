@@ -173,7 +173,7 @@ impl Intcode {
 
     // TODO fix the width case for better pattern matching
 
-    fn step(&mut self) -> Result<(), String> {
+    pub fn step(&mut self) -> Result<(), String> {
         let op_raw = self.read_mem(self.idx)?;
         let opcode: Opcode = op_raw.try_into()?;
         let width = opcode.width();
@@ -295,6 +295,34 @@ impl Intcode {
         self.input.push(value)
     }
 
+    pub fn flush_output(&mut self) -> Vec<i64> {
+        let res = self.output.clone();
+        self.output = Vec::new();
+        res
+    }
+
+    // If an output, execute before returning
+    // If an input, stop *before* for the external handler 
+    // when returning output, refresh the buffer
+
+    pub fn run_until_io(&mut self) -> Result<Message, String> {
+        loop {
+            let op_raw = self.read_mem(self.idx)?;
+            let opcode: Opcode = op_raw.try_into()?;
+
+            if opcode == Opcode::Output || opcode == Opcode::Halt {
+                self.step()?;
+                return Ok(Message::Output);
+            } else if opcode == Opcode::Input {
+                return Ok(Message::Input);
+            } else {
+                self.step()?;
+            }
+        }
+
+        
+    }
+
     pub fn run_until_output(&mut self) -> Result<i64, String> {
         loop {
             let op_raw = self.read_mem(self.idx)?;
@@ -319,4 +347,9 @@ impl Intcode {
         }
         Ok(())
     }
+}
+
+pub enum Message {
+    Input,
+    Output,
 }
