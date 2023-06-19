@@ -88,24 +88,22 @@ fn run_game(intcode: &mut Intcode, game: &mut Game, print: bool) -> Result<(), S
         match message {
             Message::Input => {
                 enable_raw_mode().unwrap();
-                if poll(time::Duration::from_millis(1000)).unwrap() {
-                    match crossterm::event::read().unwrap() {
-                        Event::Key(KeyEvent {
-                            code: KeyCode::Left,
-                            ..
-                        }) => {
-                            intcode.input = vec![-1];
-                        }
-                        Event::Key(KeyEvent {
-                            code: KeyCode::Right,
-                            ..
-                        }) => {
-                            intcode.input = vec![1];
-                        }
-                        _ => { intcode.input = vec![0]; },
-                    };
-                } else {
-                    intcode.input = vec![0];
+                match crossterm::event::read().unwrap() {
+                    Event::Key(KeyEvent {
+                        code: KeyCode::Left,
+                        ..
+                    }) => {
+                        intcode.input = vec![-1];
+                    }
+                    Event::Key(KeyEvent {
+                        code: KeyCode::Right,
+                        ..
+                    }) => {
+                        intcode.input = vec![1];
+                    }
+                    _ => {
+                        intcode.input = vec![0];
+                    }
                 };
                 disable_raw_mode().unwrap();
                 intcode.step()?;
