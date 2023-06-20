@@ -44,13 +44,12 @@ impl DroidMap {
         }
     }
 
-    fn handle_status(&mut self, status: Status, direction: Option<Movement>) {
+    fn handle_status(&mut self, status: Status, direction: Movement) {
         let (x_mov, y_mov): (isize, isize) = match direction {
-            Some(Movement::North) => (0, 1),
-            Some(Movement::South) => (0, -1),
-            Some(Movement::West) => (-1, 0),
-            Some(Movement::East) => (1, 0),
-            None => unreachable!(),
+            Movement::North => (0, 1),
+            Movement::South => (0, -1),
+            Movement::West => (-1, 0),
+            Movement::East => (1, 0),
         };
 
         let new_coor = (self.x + x_mov, self.y + y_mov);
@@ -193,7 +192,7 @@ fn run_droid(intcode: &mut Intcode, map: &mut DroidMap) -> Result<(), String> {
             }
             Message::Output => {
                 let status: Status = intcode.flush_output().pop().unwrap().try_into()?;
-                map.handle_status(status, direction);
+                map.handle_status(status, direction.unwrap());
                 direction = None;
                 execute!(stdout, cursor::MoveTo(0, 0)).ok();
                 println!("{}", map);
