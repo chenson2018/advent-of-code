@@ -32,7 +32,6 @@ fn main() {
     let slopes: &Vec<usize> = &mat[..]
         .iter()
         .map(|(station_x, station_y)| {
-            //let slopes: &Vec<Fraction> = &mat[..].iter().filter_map(|(asteroid_x, asteroid_y)| {
             let slopes: &HashSet<Sight> = &mat[..]
                 .iter()
                 .filter_map(|(asteroid_x, asteroid_y)| {
@@ -59,7 +58,6 @@ fn main() {
                     }
                 })
                 .collect();
-            //        println!("({}, {}) -> {}", station_x, station_y, slopes.len());
             slopes.len()
         })
         .collect();
