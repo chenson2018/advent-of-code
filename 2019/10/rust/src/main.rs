@@ -29,7 +29,7 @@ fn main() {
         .flatten()
         .collect();
 
-    let slopes: &Vec<usize> = &mat[..]
+    let n_visible: &Vec<(isize, isize, usize)> = &mat[..]
         .iter()
         .map(|(station_x, station_y)| {
             let slopes: &HashSet<Sight> = &mat[..]
@@ -58,14 +58,15 @@ fn main() {
                     }
                 })
                 .collect();
-            slopes.len()
+            (*station_x, *station_y, slopes.len())
         })
         .collect();
 
-    println!("Part 1 answer: {}", slopes.iter().max().unwrap());
+    let (station_x, station_y, p1_ans) = n_visible.iter().max_by_key(|(_, _, n)| n).unwrap();
+    println!("Part 1 answer: {}", p1_ans);
 
     // TODO part 2...
     // get the  (x,y) -> slope relative to the station
-    // order by angle, then by distance
-    // flatten and take requested index
+    // order by angle, then by distance (should be Vec<Vec<_>>)
+    // pop one off each is the ordering
 }
