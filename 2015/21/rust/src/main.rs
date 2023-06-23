@@ -68,7 +68,6 @@ impl Game {
             };
 
             self.turn += 1;
-            //            println!("{:?}", self);
         }
         self.player.hp > 0
     }
