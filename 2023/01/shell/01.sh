@@ -1,9 +1,9 @@
 pcregrep -o1 -o2 "(\d.*\d|(\d))" ../input.txt | pcregrep -o1 -o2 "(.).*(.)" | paste -sd+ | bc
 
-nums="one|two|three|four|five|six|seven|eight|nine"
-pat1="(${nums}|\d).*"
-pat2=".*(${nums}|\d)"
-paste <(pcregrep -o1 $pat1 ../input.txt) <(pcregrep -o1 $pat2 ../input.txt) -d "" | paste -sd+ |
+nums="one|two|three|four|five|six|seven|eight|nine|\d"
+pcregrep -o1 -o4 "((${nums}).*(${nums})|(${nums}))" ../input.txt | 
+	pcregrep -o1 -o2 "(${nums}).*(${nums})" | 
+	paste -sd+ |
 	sed 's/one/1/g' |
 	sed 's/two/2/g' |
 	sed 's/three/3/g' |
