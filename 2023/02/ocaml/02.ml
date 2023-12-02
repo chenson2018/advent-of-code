@@ -63,7 +63,7 @@ let p1_calc (g: game) : int =
   else 0
 
 let p2_calc (g: game) : int = 
-  let draw = List.fold_left ~f:(fun c1 -> fun c2 -> color_binop max c1 c2) ~init:(new_color) g.draws in
+  let draw = List.fold_left ~f:(color_binop max) ~init:(new_color) g.draws in
   draw.red * draw.green * draw.blue
 
 let () =
