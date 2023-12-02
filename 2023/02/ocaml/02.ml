@@ -50,8 +50,8 @@ let parse (line: string): game =
 
   let (id, tl) = 
     match (String.to_list line) with
-      | 'G'::'a'::'m'::'e'::' '::i         ::':'::tl -> (int_parse [i], tl)
-      | 'G'::'a'::'m'::'e'::' '::    i1::i2::':'::tl -> (int_parse [i1; i2], tl)
+      | 'G'::'a'::'m'::'e'::' '::        i1::':'::tl -> (int_parse [i1]        , tl)
+      | 'G'::'a'::'m'::'e'::' '::    i1::i2::':'::tl -> (int_parse [i1; i2]    , tl)
       | 'G'::'a'::'m'::'e'::' '::i1::i2::i3::':'::tl -> (int_parse [i1; i2; i3], tl)
       | _ -> assert false
   in
