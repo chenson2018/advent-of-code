@@ -33,7 +33,7 @@ let adj symbol number =
                      symbol.x <= number.xmax + 1 && 
   abs (number.y - symbol.y) <= 1
 
-let parse (input: (char list) list) : schematic =
+let parse (input: char list list) : schematic =
   let rec aux input num xmax y numbers symbols =
     let xmax = xmax + 1 in
     match input with
