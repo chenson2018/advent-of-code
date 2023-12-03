@@ -18,6 +18,11 @@ let color_binop (f: int -> int -> int) (c1: color) (c2: color) : color =
     blue  = f c1.blue  c2.blue;
   }
 
+let color_cmp (f: int -> int -> bool) (c1: color) (c2: color) : bool =
+  f c1.red   c2.red   &&
+  f c1.green c2.green &&
+  f c1.blue  c2.blue
+
 type game = {
   id: int;
   draws: color list;
@@ -58,7 +63,7 @@ let parse (line: string): game =
   { id; draws = aux tl new_color }
 
 let p1_calc (g: game) : int =
-  if List.for_all ~f:(fun col -> col.red <= 12 && col.green <= 13 && col.blue <= 14 ) g.draws
+  if List.for_all ~f:(color_cmp (>=) {red = 12; green = 13; blue = 14}) g.draws
   then g.id
   else 0
 
