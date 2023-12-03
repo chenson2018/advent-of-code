@@ -36,7 +36,6 @@ let adj symbol number =
 let parse (input: (char list) list) : schematic =
   let rec aux input num xmax y numbers symbols =
     let xmax = xmax + 1 in
-
     match input with
     (* the number will continue next call *)
     | ('0'..'9' as i1) :: ('0'..'9' as i2) :: tl -> aux (i2 :: tl) (i1 :: num) xmax y numbers symbols
@@ -48,7 +47,7 @@ let parse (input: (char list) list) : schematic =
           let new_num = {value; y; xmin; xmax} in
           aux tl [] (xmax) y (new_num :: numbers) symbols
         )
-    (* nono-symbol *)
+    (* non-symbol *)
     | '.' :: tl -> aux tl num xmax y numbers symbols
     (* a symbol *)
     | text :: tl -> aux tl num xmax y numbers ({x = xmax; y; text} :: symbols)
@@ -70,7 +69,7 @@ let p2_calc schematic : int =
     ~f:
       (
       fun sym -> 
-      let adj_nums = schematic.numbers |> List.filter ~f:(fun num -> adj sym num) in
+      let adj_nums = schematic.numbers |> List.filter ~f:(adj sym) in
       match sym.text, adj_nums with
         | '*', { value = val1; _} :: {value = val2; _} :: []  -> Some (val1 * val2)
         | _ -> None
@@ -78,8 +77,7 @@ let p2_calc schematic : int =
     List.fold_left ~f:(+) ~init:0
 
 let () =
-  let input = In_channel.read_lines "../input.txt" |> List.map ~f:String.to_list in
-  let schematic = parse input in
+  let schematic = In_channel.read_lines "../input.txt" |> List.map ~f:String.to_list |> parse in
   let p1_ans = p1_calc schematic in
   let p2_ans = p2_calc schematic in
     printf "Part 1 answer: %d\n" p1_ans;
