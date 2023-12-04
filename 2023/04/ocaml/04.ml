@@ -5,6 +5,7 @@ open Core
 open Core.String
 open Core.Int
 open Core.Set
+open Core.Fn
 
 module Card = struct
   type card = { id: int; winning: int list; numbers: int list} [@@deriving show] 
@@ -58,7 +59,7 @@ let p2_calc cards =
   aux matches copies
 
 let () =
-  let cards = In_channel.read_lines "../input.txt" |> List.map ~f:String.to_list |> List.map ~f:parse in
+  let cards = In_channel.read_lines "../input.txt" |> List.map ~f:(compose parse String.to_list) in
   let p1_ans = cards |> List.map ~f:score |> List.fold_left ~f:(+) ~init:0 in
   let p2_ans = p2_calc cards in
     printf "Part 1 answer: %d\n" p1_ans;
