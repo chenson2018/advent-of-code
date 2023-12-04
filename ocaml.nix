@@ -8,5 +8,6 @@ mkShell {
 		dune_3
 		ocamlPackages.core
 		ocamlPackages.utop
+		ocamlPackages.ppx_deriving
   ];
 }
