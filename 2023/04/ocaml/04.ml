@@ -9,6 +9,13 @@ open Core.Fn
 
 module Card = struct
   type card = { id: int; winning: int list; numbers: int list} [@@deriving show] 
+
+  let n_intersect card : int = 
+    inter (Set.of_list card.winning) (Set.of_list card.numbers) |> Set.length
+  
+  let score card : int = 
+    let count = card |> n_intersect in
+    if count = 0 then 0 else pow 2 (count - 1)
 end
 
 open Card
@@ -33,19 +40,13 @@ let parse input : card =
   let (numbers,winning) = aux body [] [] in
   {id; winning; numbers}
 
-let n_intersect card : int = 
-  inter (Set.of_list card.winning) (Set.of_list card.numbers) |> Set.length
-
-let score card : int = 
-  let count = card |> n_intersect in
-  if count = 0 then 0 else pow 2 (count - 1)
-
-(* get a list of n copies of a *)
-let rec repeat a n = if n = 0 then [] else a :: (repeat a (n - 1))
-
 let p2_calc cards = 
+  (* get a list of n copies of a *)
+  let rec repeat a n = if n = 0 then [] else a :: (repeat a (n - 1)) in
+
   let matches = cards |> List.map ~f:(n_intersect) in
   let copies = repeat 1 (List.length cards) in
+
   let rec aux m c = 
     match m, c with
     | n_matches :: m_tl, n_copies :: c_tl -> (
