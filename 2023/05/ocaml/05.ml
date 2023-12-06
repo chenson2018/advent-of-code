@@ -45,7 +45,7 @@ module Almanac = struct
     let rev_maps = 
       maps |> 
       List.rev |>
-      List.map ~f:(fun xs -> xs |> List.map  ~f:(fun x -> {x with source = x.destination; destination = x.source})) in
+      List.map ~f:(List.map  ~f:(fun x -> {x with source = x.destination; destination = x.source})) in
     p1_calc rev_maps value
 
 end  
