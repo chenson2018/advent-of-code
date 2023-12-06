@@ -20,14 +20,14 @@ let wins race =
   upper - lower + 1
 
 let () = 
-  let races' = [
+  let races = [
     {distance = 298. ; time = 49.};
     {distance = 1185.; time = 78.};
     {distance = 1066.; time = 79.};
     {distance = 1181.; time = 80.};
   ]
   in
-let p1_ans = races' |> List.map ~f:wins |> List.fold_left ~f:( * ) ~init:1 in
+let p1_ans = races |> List.map ~f:wins |> List.fold_left ~f:( * ) ~init:1 in
     printf "Part 1 answer: %d\n" p1_ans;
 let p2_ans = wins {time = 49787980.; distance = 298118510661181.} in
     printf "Part 2 answer: %d\n" p2_ans;
