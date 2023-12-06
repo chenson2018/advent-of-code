@@ -40,6 +40,14 @@ module Almanac = struct
       List.map ~f:(List.map ~f:make_mapping_fn) |> 
       List.map ~f:compose_mapping |>
       List.fold_left ~init:value ~f:(fun acc -> fun f -> f acc)
+
+  let location_to_seed maps value: int = 
+    let rev_maps = 
+      maps |> 
+      List.rev |>
+      List.map ~f:(fun xs -> xs |> List.map  ~f:(fun x -> {x with source = x.destination; destination = x.source})) in
+    p1_calc rev_maps value
+
 end  
 
 open Almanac
@@ -76,9 +84,38 @@ let parse text : (int list) * (mapping list list) =
   let maps = List.map ~f:parse_maps maps_raw in
   (seeds,maps)  
 
+module Range = struct
+  type range = {
+    start: int;
+    length: int;
+  } [@@deriving show]
+
+  let rec ranges_from_list seeds : range list =
+    match seeds with
+    | length :: start :: tl -> {length; start} :: ranges_from_list tl
+    | _ -> []
+
+  let range_contains range value = 
+    range.start <= value && value <= range.start + range.length - 1
+end
+
+open Range
+
+let p2_calc maps seeds = 
+  let f = location_to_seed maps in
+  let rec aux loc = 
+    let seed = f loc in
+    if List.exists ~f:(fun r -> range_contains r seed) seeds then loc else aux (loc + 1)
+  in
+  (* this is a guess based on the scale of the data *)
+  (* in principle you could binary search for it... *)
+  aux 47_500_000
+
 let () = 
-  let input = In_channel.read_all "../example.txt" in
   let input = In_channel.read_all "../input.txt" in
   let (seeds,maps) = parse input in
   let p1_ans = List.map ~f:(p1_calc maps) seeds |> min_list_exn in
     printf "Part 1 answer: %d\n" p1_ans;
+  let seed_ranges = ranges_from_list seeds in
+  let p2_ans = p2_calc maps seed_ranges in
+    printf "Part 2 answer: %d\n" p2_ans;
