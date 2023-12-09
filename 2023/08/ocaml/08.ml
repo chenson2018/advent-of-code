@@ -52,13 +52,14 @@ let parse text =
   in
   {instructions; map}
 
-let iter mapping instruction name = 
-  let (left,right) = Core.Map.find_exn mapping name in
-  match instruction with
-  | Left -> left
-  | Right -> right
 
 let traverse network start (stop: string -> bool) = 
+  let iter instruction name = 
+    let (left,right) = Core.Map.find_exn network.map name in
+      match instruction with
+      | Left -> left
+      | Right -> right
+  in
   let rec aux instructions name count = 
     if stop name
       then count 
@@ -66,7 +67,7 @@ let traverse network start (stop: string -> bool) =
         match instructions with
         | [] -> aux network.instructions name count
         | ins :: tl -> (
-          let next_name = iter network.map ins name in
+          let next_name = iter ins name in
           aux tl next_name (count + 1)
         )
   in
