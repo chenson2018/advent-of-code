@@ -17,12 +17,6 @@ let instruction_of_char c =
   | 'R' -> Right
   | _ -> assert false
 
-type node = {
-  name: string;
-  left: string;
-  right: string;
-} [@@deriving show]
-
 type network = {
   instructions: instruction list;
   map: (string, string * string, comparator_witness) Poly.map
