@@ -66,8 +66,7 @@ let expand factor galaxies =
     Core.Map.of_alist_exn (module Int)
   in
   galaxies |> 
-    List.map ~f:(fun g -> {x = g.x + find_exn x_map g.x ; 
-                           y = g.y + find_exn y_map g.y ;})
+    List.map ~f:(fun g -> fold_galaxy (+) g {x = find_exn x_map g.x; y = find_exn y_map g.y})
 
 let sum_steps galaxies = 
   galaxies |>
