@@ -47,12 +47,11 @@ let cumulative (l: int list) : int list =
   aux l 0
 
 let expand factor galaxies = 
-  let factor = if factor = 1 then 1 else factor - 1 in
   let max_galaxy = List.fold_left ~f:(fold_galaxy Int.max) ~init:{x = 0; y = 0} galaxies in
   (* a map of how far to shift all galaxy y values *)
   let y_map = 
     List.range ~start:`inclusive ~stop:`inclusive 0 max_galaxy.y |>
-    List.map ~f:(fun y -> if (galaxies |> List.exists ~f:(fun g -> g.y = y)) then 0 else factor) |>
+    List.map ~f:(fun y -> if (galaxies |> List.exists ~f:(fun g -> g.y = y)) then 0 else factor - 1) |>
     cumulative |>
     List.mapi ~f:(fun y -> fun shift -> (y, shift)) |>
     Core.Map.of_alist_exn (module Int)
@@ -60,7 +59,7 @@ let expand factor galaxies =
   (* a map of how far to shift all galaxy x values *)
   let x_map = 
     List.range ~start:`inclusive ~stop:`inclusive 0 max_galaxy.x |>
-    List.map ~f:(fun x -> if (galaxies |> List.exists ~f:(fun g -> g.x = x)) then 0 else factor) |>
+    List.map ~f:(fun x -> if (galaxies |> List.exists ~f:(fun g -> g.x = x)) then 0 else factor - 1) |>
     cumulative |>
     List.mapi ~f:(fun x -> fun shift -> (x, shift)) |>
     Core.Map.of_alist_exn (module Int)
@@ -76,7 +75,7 @@ let sum_steps galaxies =
 
 let () = 
   let galaxies = In_channel.read_lines "../input.txt" |> parse in
-  let p1_ans = galaxies |> expand 1       |> sum_steps in
+  let p1_ans = galaxies |> expand 2       |> sum_steps in
   let p2_ans = galaxies |> expand 1000000 |> sum_steps in
     printf "Part 1 answer: %d\n" p1_ans;
     printf "Part 2 answer: %d\n" p2_ans;
