@@ -1,3 +1,4 @@
+import Data.Coerce
 import Data.List
 
 data Card
@@ -10,15 +11,6 @@ data Card
   | A
   deriving (Show, Eq, Ord)
 
--- this should really be Read
-cardParse :: Char -> Card
-cardParse 'A' = A
-cardParse 'K' = K
-cardParse 'Q' = Q
-cardParse 'J' = J
-cardParse 'T' = T
-cardParse c = N (read [c])
-
 data Score
   = HighCard
   | OnePair
@@ -28,6 +20,9 @@ data Score
   | FourKind
   | FiveKind
   deriving (Show, Eq, Ord)
+
+data Player = P {cards :: [Card], bid :: Int}
+  deriving (Show)
 
 freq :: (Ord a) => [a] -> [Int]
 freq xs = sort $ map length $ (group . sort) xs
@@ -50,6 +45,7 @@ tiebreakLe (x : xs) (y : ys)
   | x == y = tiebreakLe xs ys
   | otherwise = x <= y
 
+-- type and ordering for a standard hand
 newtype Hand = H [Card] deriving (Show, Eq)
 
 instance Ord Hand where
@@ -60,8 +56,56 @@ instance Ord Hand where
       s1 = scoreHand c1
       s2 = scoreHand c2
 
-data Player = P {hand :: Hand, bid :: Int}
-  deriving (Show)
+-- type and ordering for Joker Scoring
+replaceJoker :: Player -> Player
+replaceJoker P {cards, bid} = P {cards = map replace cards, bid}
+  where
+    replace c = if c == J then Joker else c
+
+scoreJoker :: [Card] -> Score
+scoreJoker cards = 
+  -- if all Jokers, this is empty, so a five of a kind 
+  case possibleScores of
+  [] -> FiveKind
+  _  -> maximum possibleScores
+  where
+    -- we only need to add possibilites that match some current card
+    options = filter (`elem` cards) $ map N [2 .. 9] ++ [T, J, Q, K, A]
+    [a, b, c, d, e] = map (\c -> if c == Joker then options else [c]) cards 
+    possible = (\a b c d e -> [a, b, c, d, e]) <$> a <*> b <*> c <*> d <*> e
+    possibleScores = map scoreHand possible
+
+newtype JokerHand = JH [Card] deriving (Show, Eq)
+
+instance Ord JokerHand where
+  (JH c1) <= (JH c2)
+    | s1 == s2 = tiebreakLe c1 c2
+    | otherwise = s1 <= s2
+    where
+      s1 = scoreJoker c1
+      s2 = scoreJoker c2
+
+-- answers for both parts
+
+-- given scoring scheme for cards, calculate winnings
+winnings :: Ord a => ([Card] -> a) -> [Player] -> Int
+winnings f xs = sum $ zipWith (*) [1 ..] (map bid $ sortOn (f . cards) xs)
+
+p1 :: [Player] -> Int
+p1 = winnings H
+
+p2 :: [Player] -> Int
+p2 xs = winnings JH (map replaceJoker xs)
+
+-- Parsing, should really use Read?
+
+cardParse :: Char -> Card
+cardParse 'A' = A
+cardParse 'K' = K
+cardParse 'Q' = Q
+cardParse 'J' = J
+cardParse 'T' = T
+cardParse c = N (read [c])
 
 parse :: String -> [Player]
 parse raw = map parse_player raw_split
@@ -69,14 +113,11 @@ parse raw = map parse_player raw_split
     raw_split = map words $ lines raw
     parse_player xs =
       case xs of
-        [raw_cards, raw_bid] -> P {hand = H (map cardParse raw_cards), bid = read raw_bid}
-
-p1 :: [Player] -> Int
-p1 xs = sum $ zipWith (*) [1 ..] (map bid $ sortOn hand xs)
+        [raw_cards, raw_bid] -> P {cards = map cardParse raw_cards, bid = read raw_bid}
 
 main :: IO ()
 main = do
-  -- raw <- readFile "../test.txt"
   raw <- readFile "../input.txt"
   let input = parse raw
   print (p1 input)
+  print (p2 input)
