@@ -63,15 +63,15 @@ replaceJoker P {cards, bid} = P {cards = map replace cards, bid}
     replace c = if c == J then Joker else c
 
 scoreJoker :: [Card] -> Score
-scoreJoker cards = 
-  -- if all Jokers, this is empty, so a five of a kind 
+scoreJoker cards =
+  -- if all Jokers, this is empty, so a five of a kind
   case possibleScores of
-  [] -> FiveKind
-  _  -> maximum possibleScores
+    [] -> FiveKind
+    _ -> maximum possibleScores
   where
     -- we only need to add possibilites that match some current card
     options = filter (`elem` cards) $ map N [2 .. 9] ++ [T, J, Q, K, A]
-    [a, b, c, d, e] = map (\c -> if c == Joker then options else [c]) cards 
+    [a, b, c, d, e] = map (\c -> if c == Joker then options else [c]) cards
     possible = (\a b c d e -> [a, b, c, d, e]) <$> a <*> b <*> c <*> d <*> e
     possibleScores = map scoreHand possible
 
@@ -88,7 +88,7 @@ instance Ord JokerHand where
 -- answers for both parts
 
 -- given scoring scheme for cards, calculate winnings
-winnings :: Ord a => ([Card] -> a) -> [Player] -> Int
+winnings :: (Ord a) => ([Card] -> a) -> [Player] -> Int
 winnings f xs = sum $ zipWith (*) [1 ..] (map bid $ sortOn (f . cards) xs)
 
 p1 :: [Player] -> Int
