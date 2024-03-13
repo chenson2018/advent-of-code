@@ -1,7 +1,8 @@
 import Data.List
 
 data Card
-  = N Int
+  = Joker
+  | N Int
   | T
   | J
   | Q
@@ -31,11 +32,9 @@ data Score
 freq :: (Ord a) => [a] -> [Int]
 freq xs = sort $ map length $ (group . sort) xs
 
-newtype Hand = H [Card] deriving (Show, Eq)
-
 -- assumes proper length of 5 cards
-scoreHand :: Hand -> Score
-scoreHand (H cards) =
+scoreHand :: [Card] -> Score
+scoreHand cards =
   case freq cards of
     [1, 1, 1, 1, 1] -> HighCard
     [1, 1, 1, 2] -> OnePair
@@ -51,13 +50,15 @@ tiebreakLe (x : xs) (y : ys)
   | x == y = tiebreakLe xs ys
   | otherwise = x <= y
 
+newtype Hand = H [Card] deriving (Show, Eq)
+
 instance Ord Hand where
   (H c1) <= (H c2)
     | s1 == s2 = tiebreakLe c1 c2
     | otherwise = s1 <= s2
     where
-      s1 = scoreHand (H c1)
-      s2 = scoreHand (H c2)
+      s1 = scoreHand c1
+      s2 = scoreHand c2
 
 data Player = P {hand :: Hand, bid :: Int}
   deriving (Show)
