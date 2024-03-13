@@ -62,13 +62,13 @@ instance Ord Hand where
 -- type and ordering for Joker Scoring
 
 -- this is a little overengineered, just experimenting
-replaceCard :: Card -> a -> (Card -> a) -> Card -> a
-replaceCard match_card cons f_alt given_card
-  | match_card == given_card = cons
-  | otherwise = f_alt given_card
+replace :: (Eq a) => a -> b -> (a -> b) -> a -> b
+replace match cons f_alt given
+  | match == given = cons
+  | otherwise = f_alt given
 
 replaceJoker :: Player -> Player
-replaceJoker P {cards, bid} = P {cards = map (replaceCard J Joker id) cards, bid}
+replaceJoker P {cards, bid} = P {cards = map (replace J Joker id) cards, bid}
 
 scoreJoker :: [Card] -> Score
 scoreJoker cards =
@@ -79,7 +79,7 @@ scoreJoker cards =
   where
     -- we only need to add possibilites that match some current card
     options = filter (`elem` cards) $ map N [2 .. 9] ++ [T, J, Q, K, A]
-    [a, b, c, d, e] = map (replaceCard Joker options (: [])) cards
+    [a, b, c, d, e] = map (replace Joker options (: [])) cards
     possible = (\a b c d e -> [a, b, c, d, e]) <$> a <*> b <*> c <*> d <*> e
     possibleScores = map scoreHand possible
 
