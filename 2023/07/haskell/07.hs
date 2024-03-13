@@ -1,4 +1,3 @@
-import Data.Coerce
 import Data.List
 
 data Card
