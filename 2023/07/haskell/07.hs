@@ -1,5 +1,22 @@
+import Control.Applicative
 import Data.List
+import Data.Maybe
 
+-- some general utilities
+freq :: (Ord a) => [a] -> [Int]
+freq xs = sort $ map length $ (group . sort) xs
+
+replace :: (Eq a) => a -> b -> (a -> b) -> a -> b
+replace match cons f_alt given
+  | match == given = cons
+  | otherwise = f_alt given
+
+maximumMaybe :: (Ord a, Foldable f) => f a -> Maybe a
+maximumMaybe xs
+  | null xs = Nothing
+  | otherwise = Just $ maximum xs
+
+-- types for cards and hand scores
 data Card
   = Joker
   | N Int
@@ -22,9 +39,6 @@ data Score
 
 data Player = P {cards :: [Card], bid :: Int}
   deriving (Show)
-
-freq :: (Ord a) => [a] -> [Int]
-freq xs = sort $ map length $ (group . sort) xs
 
 -- assumes proper length of 5 cards
 scoreHand :: [Card] -> Score
@@ -60,22 +74,11 @@ instance Ord Hand where
   (H c1) <= (H c2) = cardsScoreLe scoreHand c1 c2
 
 -- type and ordering for Joker Scoring
-
--- this is a little overengineered, just experimenting
-replace :: (Eq a) => a -> b -> (a -> b) -> a -> b
-replace match cons f_alt given
-  | match == given = cons
-  | otherwise = f_alt given
-
 replaceJoker :: Player -> Player
 replaceJoker P {cards, bid} = P {cards = map (replace J Joker id) cards, bid}
 
 scoreJoker :: [Card] -> Score
-scoreJoker cards =
-  -- if all Jokers, this is empty, so a five of a kind
-  case possibleScores of
-    [] -> FiveKind
-    _ -> maximum possibleScores
+scoreJoker cards = fromJust $ maximumMaybe possibleScores <|> Just FiveKind
   where
     -- we only need to add possibilites that match some current card
     options = filter (`elem` cards) $ map N [2 .. 9] ++ [T, J, Q, K, A]
@@ -88,12 +91,11 @@ newtype JokerHand = JH [Card] deriving (Show, Eq)
 instance Ord JokerHand where
   (JH c1) <= (JH c2) = cardsScoreLe scoreJoker c1 c2
 
--- answers for both parts
-
 -- given scoring scheme for cards, calculate winnings
 winnings :: (Ord a) => ([Card] -> a) -> [Player] -> Int
 winnings f xs = sum $ zipWith (*) [1 ..] (map bid $ sortOn (f . cards) xs)
 
+-- answers for both parts
 p1 :: [Player] -> Int
 p1 = winnings H
 
@@ -101,7 +103,6 @@ p2 :: [Player] -> Int
 p2 xs = winnings JH (map replaceJoker xs)
 
 -- Parsing, should really use Read?
-
 cardParse :: Char -> Card
 cardParse 'A' = A
 cardParse 'K' = K
