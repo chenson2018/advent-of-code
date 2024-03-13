@@ -44,16 +44,20 @@ tiebreakLe (x : xs) (y : ys)
   | x == y = tiebreakLe xs ys
   | otherwise = x <= y
 
+-- general scoring
+cardsScoreLe :: ([Card] -> Score) -> [Card] -> [Card] -> Bool
+cardsScoreLe metric c1 c2
+  | s1 == s2 = tiebreakLe c1 c2
+  | otherwise = s1 <= s2
+  where
+    s1 = metric c1
+    s2 = metric c2
+
 -- type and ordering for a standard hand
 newtype Hand = H [Card] deriving (Show, Eq)
 
 instance Ord Hand where
-  (H c1) <= (H c2)
-    | s1 == s2 = tiebreakLe c1 c2
-    | otherwise = s1 <= s2
-    where
-      s1 = scoreHand c1
-      s2 = scoreHand c2
+  (H c1) <= (H c2) = cardsScoreLe scoreHand c1 c2
 
 -- type and ordering for Joker Scoring
 replaceJoker :: Player -> Player
@@ -77,12 +81,7 @@ scoreJoker cards =
 newtype JokerHand = JH [Card] deriving (Show, Eq)
 
 instance Ord JokerHand where
-  (JH c1) <= (JH c2)
-    | s1 == s2 = tiebreakLe c1 c2
-    | otherwise = s1 <= s2
-    where
-      s1 = scoreJoker c1
-      s2 = scoreJoker c2
+  (JH c1) <= (JH c2) = cardsScoreLe scoreJoker c1 c2
 
 -- answers for both parts
 
