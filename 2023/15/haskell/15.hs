@@ -51,20 +51,12 @@ data Instruction = I
   deriving (Show)
 
 parseInstruction :: String -> Instruction
-parseInstruction s =
-  case splitWhen (not . isAlpha) s of
-    (label, '=' : num) ->
-      I
-        { label,
-          op = Focal (read num),
-          box = hash label
-        }
-    (label, "-") ->
-      I
-        { label,
-          op = Minus,
-          box = hash label
-        }
+parseInstruction s = I {label, box, op}
+  where
+    box = hash label
+    (label, op) = case splitWhen (not . isAlpha) s of
+      (label, '=' : num) -> (label, Focal (read num))
+      (label, "-") -> (label, Minus)
 
 -- hashmap for box states
 type BoxMap = M.Map Int [Instruction]
