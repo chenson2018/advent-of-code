@@ -66,7 +66,7 @@ initBox = M.fromList $ map (,[]) [0 .. 255]
 
 processInst :: Instruction -> BoxMap -> BoxMap
 processInst (I {label = l, box, op = Minus}) = M.adjust (filter ((/= l) . label)) box
-processInst ins@(I {box, op = Focal _}) = M.adjust (replaceOrAdd (on (==) label) ins) box
+processInst ins@(I {box, op = Focal _}) = M.adjust (replaceOrAdd ((==) `on` label) ins) box
 
 score :: BoxMap -> Int
 score bm =
