@@ -1,4 +1,5 @@
 import Data.Char
+import Data.Function
 import qualified Data.Map as M
 
 -- some utilities, some a bit inefficient with reversing strings
@@ -66,23 +67,26 @@ parseInstruction s =
         }
 
 -- hashmap for box states
-type BoxMap = M.Map Int [(String, Int)]
+type BoxMap = M.Map Int [Instruction]
 
 initBox :: BoxMap
 initBox = M.fromList $ map (,[]) [0 .. 255]
 
 processInst :: Instruction -> BoxMap -> BoxMap
-processInst (I {label, box, op = Minus}) = M.adjust (filter ((/= label) . fst)) box
-processInst (I {label, box, op = Focal n}) = M.adjust (replaceOrAdd (\a a' -> fst a == fst a') (label, n)) box
+processInst (I {label = l, box, op = Minus}) = M.adjust (filter ((/= l) . label)) box
+processInst ins@(I {box, op = Focal _}) = M.adjust (replaceOrAdd (\a a' -> label a == label a') ins) box
+
+score :: BoxMap -> Int
+score bm =
+  M.elems bm
+    & concatMap (zip [1 ..])
+    & foldr (\(slot, I {box, op = Focal focal}) acc -> acc + (box + 1) * slot * focal) 0
+
+processAll :: [Instruction] -> BoxMap -> BoxMap
+processAll ins bm = foldl (flip processInst) bm ins
 
 p2 :: [Instruction] -> Int
-p2 ins = score $ iter ins initBox
-  where
-    iter ins bm = foldl (flip processInst) bm ins
-    score =
-      M.foldrWithKey
-        (\b xs acc -> acc + sum (zipWith (\s f -> (b + 1) * s * f) [1 ..] (map snd xs)))
-        0
+p2 ins = score $ processAll ins initBox
 
 main = do
   raw <- readFile "../input.txt"
