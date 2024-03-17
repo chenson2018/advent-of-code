@@ -64,9 +64,9 @@ type BoxMap = M.Map Int [Instruction]
 initBox :: BoxMap
 initBox = M.fromList $ map (,[]) [0 .. 255]
 
-processInst :: Instruction -> BoxMap -> BoxMap
-processInst (I {label = l, box, op = Minus}) = M.adjust (filter ((/= l) . label)) box
-processInst ins@(I {box, op = Focal _}) = M.adjust (replaceOrAdd ((==) `on` label) ins) box
+processInst :: BoxMap -> Instruction -> BoxMap
+processInst bm (I {label = l, box, op = Minus}) = M.adjust (filter ((/= l) . label)) box bm
+processInst bm ins@(I {box, op = Focal _}) = M.adjust (replaceOrAdd ((==) `on` label) ins) box bm
 
 score :: BoxMap -> Int
 score bm =
@@ -74,11 +74,8 @@ score bm =
     & concatMap (zip [1 ..])
     & foldr (\(slot, I {box, op = Focal focal}) acc -> acc + (box + 1) * slot * focal) 0
 
-processAll :: [Instruction] -> BoxMap -> BoxMap
-processAll ins bm = foldl (flip processInst) bm ins
-
 p2 :: [Instruction] -> Int
-p2 ins = score $ processAll ins initBox
+p2 = score . foldl processInst initBox
 
 main = do
   raw <- readFile "../input.txt"
