@@ -1,3 +1,4 @@
+import Control.Arrow
 import Data.Char
 import Data.Function
 import qualified Data.Map as M
@@ -69,10 +70,10 @@ processInst bm (I {label = l, box, op = Minus}) = M.adjust (filter ((/= l) . lab
 processInst bm ins@(I {box, op = Focal _}) = M.adjust (replaceOrAdd ((==) `on` label) ins) box bm
 
 score :: BoxMap -> Int
-score bm =
-  M.elems bm
-    & concatMap (zip [1 ..])
-    & foldr (\(slot, I {box, op = Focal focal}) acc -> acc + (box + 1) * slot * focal) 0
+score =
+  M.elems
+    >>> concatMap (zip [1 ..])
+    >>> foldr (\(slot, I {box, op = Focal focal}) acc -> acc + (box + 1) * slot * focal) 0
 
 p2 :: [Instruction] -> Int
 p2 = score . foldl processInst initBox
