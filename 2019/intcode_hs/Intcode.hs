@@ -1,9 +1,6 @@
 module Intcode where
 
-import Control.Arrow
-import Data.List (find)
-import Data.Map
-import Data.Maybe
+import Data.Map (Map, fromList, insert, (!))
 
 -- some utilities
 wordsWhen :: (Char -> Bool) -> String -> [String]
@@ -37,5 +34,6 @@ iter I {program, ptr} = I {program = insert d new_val program, ptr = ptr + 4}
       1 -> val_b + val_c
       2 -> val_b * val_c
 
+-- head is safe in terminating programs!
 runAll :: Intcode -> Intcode
-runAll ins = fromJust $ find (\I {program, ptr} -> 99 == program ! ptr) $ iterate iter ins
+runAll ins = head $ filter (\I {program, ptr} -> 99 == program ! ptr) $ iterate iter ins
