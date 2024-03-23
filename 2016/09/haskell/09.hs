@@ -12,8 +12,8 @@ count part ('(' : xs) = recurse part * rep + count part rest
   where
     (n_raw, r1) = span (/= 'x') xs
     (rep_raw, r2) = span (/= ')') (tail r1)
-    n :: Int = read n_raw
-    rep :: Int = read rep_raw
+    n = read n_raw
+    rep = read rep_raw
     (hd, rest) = splitAt n (tail r2)
     recurse Part1 = n
     recurse Part2 = count part hd
