@@ -72,22 +72,23 @@ ins =
 
 {- ORMOLU_ENABLE -}
 
-run :: Program -> Int -> Registers -> Registers
+run :: Program -> Int -> Registers -> Maybe Registers
 run program line registers =
-  case program M.! line of
-    Halt -> registers
-    Hlf r -> run program (line + 1) $ updateRegister (`div` 2) r registers
-    Tpl r -> run program (line + 1) $ updateRegister (* 3) r registers
-    Inc r -> run program (line + 1) $ updateRegister (+ 1) r registers
-    Jmp off -> run program (line + off) registers
-    Jie r off ->
+  case M.lookup line program of
+    Just Halt -> Just registers
+    Just (Hlf r) -> run program (line + 1) $ updateRegister (`div` 2) r registers
+    Just (Tpl r) -> run program (line + 1) $ updateRegister (* 3) r registers
+    Just (Inc r) -> run program (line + 1) $ updateRegister (+ 1) r registers
+    Just (Jmp off) -> run program (line + off) registers
+    Just (Jie r off) ->
       if even $ lookupRegister registers r
         then run program (line + off) registers
         else run program (line + 1) registers
-    Jio r off ->
+    Just (Jio r off) ->
       if (== 1) $ lookupRegister registers r
         then run program (line + off) registers
         else run program (line + 1) registers
+    Nothing -> Nothing
 
 main = do
   program <- initProgram . map fst . fromJust . mapM (parse ins) . lines <$> readFile "../input.txt"
