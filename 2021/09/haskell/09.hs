@@ -8,7 +8,7 @@ import Data.Maybe
 rmdups :: (Ord a) => [a] -> [a]
 rmdups = map head . group . sort
 
--- for any type of 2s lists, create a map of coordinates
+-- for any type of 2d lists, create a map of coordinates
 grid :: [[a]] -> M.Map (Int, Int) a
 grid = M.fromList . concat . zipWith zip [[(x, y) | x <- [0 ..]] | y <- [0 ..]]
 
