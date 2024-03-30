@@ -13,7 +13,7 @@ grid :: [[a]] -> M.Map (Int, Int) a
 grid = M.fromList . concat . zipWith zip [[(x, y) | x <- [0 ..]] | y <- [0 ..]]
 
 -- get key/values to N/S/E/W of a key
-surroundingWithKey :: M.Map (Int, Int) Int -> (Int, Int) -> [((Int, Int), Int)]
+surroundingWithKey :: M.Map (Int, Int) a -> (Int, Int) -> [((Int, Int), a)]
 surroundingWithKey m key = ret
   where
     directions = [(id, (+ 1)), ((+ 1), id), (subtract 1, id), (id, subtract 1)]
@@ -24,9 +24,10 @@ surroundingWithKey m key = ret
     ret = mapMaybe f key_vals
 
 -- get values to N/S/E/W of a key
-surrounding :: M.Map (Int, Int) Int -> (Int, Int) -> [Int]
+surrounding :: M.Map (Int, Int) a -> (Int, Int) -> [a]
 surrounding m key = map snd $ surroundingWithKey m key
 
+-- past here, specific to the problem (a = Int)
 checkLow :: M.Map (Int, Int) Int -> (Int, Int) -> Int -> Bool
 checkLow m key val = all (val <) $ surrounding m key
 
