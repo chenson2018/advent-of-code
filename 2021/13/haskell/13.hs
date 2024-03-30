@@ -1,4 +1,3 @@
-import Data.Coerce
 import Data.List
 import Data.Maybe
 import qualified Data.Set as Set
@@ -18,18 +17,19 @@ data Fold
   deriving (Show)
 
 doFold :: Fold -> Set.Set (Int, Int) -> Set.Set (Int, Int)
-doFold (Y yf) s = ret
+doFold fold coors = ret
   where
-    above = Set.filter ((< yf) . snd) s
-    below = Set.filter ((yf <) . snd) s
-    flip_below = Set.map (\(x, y) -> (x, y - 2 * (y - yf))) below
-    ret = Set.union above flip_below
-doFold (X xf) s = ret
-  where
-    left = Set.filter ((< xf) . fst) s
-    right = Set.filter ((xf <) . fst) s
-    flip_right = Set.map (\(x, y) -> (x - 2 * (x - xf), y)) right
-    ret = Set.union left flip_right
+    get (X _) = fst
+    get (Y _) = snd
+    val (X fval) = fval
+    val (Y fval) = fval
+    apply f (X fval) (x, y) = (f x fval, y)
+    apply f (Y fval) (x, y) = (x, f y fval)
+    low = Set.filter ((< val fold) . get fold) coors
+    high = Set.filter ((val fold <) . get fold) coors
+    f idx fval = idx - 2 * (idx - fval)
+    flip_high = Set.map (apply f fold) high
+    ret = Set.union low flip_high
 
 display :: (Show a) => a -> a -> Set.Set (Int, Int) -> [[a]]
 display one zero s = disp
