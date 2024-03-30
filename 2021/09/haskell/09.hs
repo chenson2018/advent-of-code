@@ -27,6 +27,7 @@ surroundingWithKey m key = ret
 surrounding :: M.Map (Int, Int) a -> (Int, Int) -> [a]
 surrounding m key = map snd $ surroundingWithKey m key
 
+-- check if a key is surrounded by higher values
 checkLow :: (Ord a) => M.Map (Int, Int) a -> (Int, Int) -> a -> Bool
 checkLow m key val = all (val <) $ surrounding m key
 
