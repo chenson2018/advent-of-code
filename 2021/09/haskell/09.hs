@@ -27,10 +27,10 @@ surroundingWithKey m key = ret
 surrounding :: M.Map (Int, Int) a -> (Int, Int) -> [a]
 surrounding m key = map snd $ surroundingWithKey m key
 
--- past here, specific to the problem (a = Int)
-checkLow :: M.Map (Int, Int) Int -> (Int, Int) -> Int -> Bool
+checkLow :: (Ord a) => M.Map (Int, Int) a -> (Int, Int) -> a -> Bool
 checkLow m key val = all (val <) $ surrounding m key
 
+-- past here, specific to the problem (a = Int)
 p1 :: M.Map (Int, Int) Int -> Int
 p1 m = sum $ (+ 1) <$> M.filterWithKey (checkLow m) m
 
