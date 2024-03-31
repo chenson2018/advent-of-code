@@ -22,7 +22,7 @@ data Target = Target
   deriving (Show)
 
 inTarget :: Target -> (Int, Int) -> Bool
-inTarget t (x, y) = and [min_x t <= x, x <= max_x t, min_y t <= y, y <= max_y t]
+inTarget Target {min_x, max_x, min_y, max_y} (x, y) = and [min_x <= x, x <= max_x, min_y <= y, y <= max_y]
 
 step :: Probe -> Probe
 step Probe {x, y, vx, vy}
@@ -34,42 +34,28 @@ step Probe {x, y, vx, vy}
     new_y = y + vy
     new_vy = vy - 1
 
-display :: Target -> [Probe] -> [[Char]]
-display target@Target {min_x, min_y, max_x, max_y} probes = ret
-  where
-    probe_coors = map ((,) <$> x <*> y) probes
-    minx = minimum $ 0 : min_x : map fst probe_coors
-    maxx = maximum $ 0 : max_x : map fst probe_coors
-    miny = minimum $ 0 : min_y : map snd probe_coors
-    maxy = maximum $ 0 : min_y : map snd probe_coors
-
-    coors = [[(x, y) | x <- [minx .. maxx]] | y <- [miny .. maxy]]
-
-    disp coor
-      | coor == (0, 0) = 'S'
-      | coor `elem` probe_coors = '#'
-      | inTarget target coor = 'T'
-      | otherwise = '.'
-
-    ret = reverse $ (map . map) disp coors
-
 try :: Target -> Int -> Int -> Maybe ((Int, Int), Int)
-try target vx vy = if inTarget target (px, py) then Just ((vx, vy), high) else Nothing
+try target vx vy =
+  case filt of
+    [] -> Nothing
+    _ -> Just ((vx, vy), high)
   where
-    probes = takeWhile ((>= min_y target) . y) $ iterate step $ initProbe vx vy
-    Probe {x = px, y = py} = last probes
+    init = initProbe vx vy
+    path = iterate step init
+    -- this is a hack
+    probes = take 350 path
+    filt = filter (\Probe {x, y} -> inTarget target (x, y)) probes
     high = maximum $ map y probes
+
+getIntersects :: Target -> [((Int, Int), Int)]
+getIntersects target@Target {min_x, max_x, min_y, max_y} = paths
+  where
+    m = maximum $ map abs [min_x, max_x, min_y, max_y]
+    paths = catMaybes $ try target <$> [(-m) .. m] <*> [(-m) .. m]
 
 main =
   do
-    -- let target = Target {min_x = 20, max_x = 30, min_y = -10, max_y = -5}
     let target = Target {min_x = 153, max_x = 199, min_y = -114, max_y = -75}
-    let m = 150
-    let combos = (,) <$> [(-m) .. m] <*> [(-m) .. m]
-    let paths = mapMaybe (uncurry $ try target) combos
-    print $ snd $ maximumBy (compare `on` snd) paths
-
--- this is wrong...
--- something is off with the indexing I think???
--- check the value above wwith fst instead of snd
--- print $ length paths
+    let intersects = getIntersects target
+    print $ snd $ maximumBy (compare `on` snd) intersects
+    print $ length intersects
