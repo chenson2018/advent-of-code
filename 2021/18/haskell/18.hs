@@ -88,25 +88,17 @@ sumReduce a b = reduction $ ((++) `on` inc_depth) a b
   where
     inc_depth = map (\x@Flat {depth} -> x {depth = depth + 1})
 
--- Tree representation
-data Snailfish
-  = Val Int
-  | Pair Snailfish Snailfish
-  deriving (Show)
-
-magnitude :: Snailfish -> Int
-magnitude (Pair l r) = 3 * magnitude l + 2 * magnitude r
-magnitude (Val v) = v
-
--- convert from flat to tree representation
-toSnailfish :: [Flat] -> Snailfish
-toSnailfish xs = ret
+-- this looks like State?
+-- assumes properly constructed [Flat]
+-- inspired by `unflatten` at: https://www.reddit.com/r/haskell/comments/rizwa7/comment/hp14g7i/
+magnitude :: [Flat] -> Int
+magnitude xs = ret
   where
     (ret, []) = aux (-1) xs
-    aux :: Int -> [Flat] -> (Snailfish, [Flat])
+    aux :: Int -> [Flat] -> (Int, [Flat])
     aux depth xs@((Flat d v) : tl)
-      | depth == d = (Val v, tl)
-      | otherwise = (Pair l r, tl'')
+      | depth == d = (v, tl)
+      | otherwise = (3 * l + 2 * r, tl'')
       where
         (l, tl') = aux (depth + 1) xs
         (r, tl'') = aux (depth + 1) tl'
@@ -114,5 +106,5 @@ toSnailfish xs = ret
 main =
   do
     input@(hd : tl) <- map fst . fromJust . mapM parseFlat . lines <$> readFile "../input.txt"
-    print $ magnitude $ toSnailfish $ foldl sumReduce hd tl
-    print $ maximum $ map (magnitude . toSnailfish) $ sumReduce <$> input <*> input
+    print $ magnitude $ foldl sumReduce hd tl
+    print $ maximum $ map magnitude $ sumReduce <$> input <*> input
