@@ -92,7 +92,7 @@ sumReduce a b = reduction $ ((++) `on` inc_depth) a b
 -- parameters leaf and node are functions to handle each case
 -- inspired by `unflatten` at: https://www.reddit.com/r/haskell/comments/rizwa7/comment/hp14g7i/
 -- seems similar to State monad?
-mapAtDepth :: Int -> (Int -> t) -> (t -> t -> t) -> [Flat] -> (t, [Flat])
+mapAtDepth :: Int -> (Int -> a) -> (a -> a -> a) -> [Flat] -> (a, [Flat])
 mapAtDepth depth leaf node xs@((Flat d v) : tl)
   | depth == d = (leaf v, tl)
   | otherwise = (node l r, tl'')
