@@ -88,20 +88,33 @@ sumReduce a b = reduction $ ((++) `on` inc_depth) a b
   where
     inc_depth = map (\x@Flat {depth} -> x {depth = depth + 1})
 
--- this looks like State?
--- assumes properly constructed [Flat]
+-- this generally collects [Flat] according to its tree structure
+-- parameters leaf and node are functions to handle each case
 -- inspired by `unflatten` at: https://www.reddit.com/r/haskell/comments/rizwa7/comment/hp14g7i/
-magnitude :: [Flat] -> Int
-magnitude xs = ret
+-- seems similar to State monad?
+treeMap :: (Int -> a) -> (a -> a -> a) -> [Flat] -> a
+treeMap leaf node xs = ret
   where
     (ret, []) = aux (-1) xs
-    aux :: Int -> [Flat] -> (Int, [Flat])
     aux depth xs@((Flat d v) : tl)
-      | depth == d = (v, tl)
-      | otherwise = (3 * l + 2 * r, tl'')
+      | depth == d = (leaf v, tl)
+      | otherwise = (node l r, tl'')
       where
         (l, tl') = aux (depth + 1) xs
         (r, tl'') = aux (depth + 1) tl'
+
+magnitude :: [Flat] -> Int
+magnitude = treeMap id (\l r -> 3 * l + 2 * r)
+
+-- Tree representation
+-- not used, just an example of the generality of treeMap
+data Snailfish
+  = Val Int
+  | Pair Snailfish Snailfish
+  deriving (Show)
+
+toSnailfish :: [Flat] -> Snailfish
+toSnailfish = treeMap Val Pair
 
 main =
   do
