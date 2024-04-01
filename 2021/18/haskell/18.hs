@@ -92,18 +92,22 @@ sumReduce a b = reduction $ ((++) `on` inc_depth) a b
 -- parameters leaf and node are functions to handle each case
 -- inspired by `unflatten` at: https://www.reddit.com/r/haskell/comments/rizwa7/comment/hp14g7i/
 -- seems similar to State monad?
-treeMap :: (Int -> a) -> (a -> a -> a) -> [Flat] -> a
-treeMap leaf node xs = ret
+mapAtDepth :: Int -> (Int -> t) -> (t -> t -> t) -> [Flat] -> (t, [Flat])
+mapAtDepth depth leaf node xs@((Flat d v) : tl)
+  | depth == d = (leaf v, tl)
+  | otherwise = (node l r, tl'')
   where
-    (ret, []) = aux (-1) xs
-    aux depth xs@((Flat d v) : tl)
-      | depth == d = (leaf v, tl)
-      | otherwise = (node l r, tl'')
-      where
-        (l, tl') = aux (depth + 1) xs
-        (r, tl'') = aux (depth + 1) tl'
+    next = mapAtDepth (depth + 1) leaf node
+    (l, tl') = next xs
+    (r, tl'') = next tl'
 
-magnitude :: [Flat] -> Int
+treeMap :: (Int -> a) -> (a -> a -> a) -> [Flat] -> Maybe a
+treeMap leaf node xs =
+  case mapAtDepth (-1) leaf node xs of
+    (a, []) -> Just a
+    _ -> Nothing
+
+magnitude :: [Flat] -> Maybe Int
 magnitude = treeMap id (\l r -> 3 * l + 2 * r)
 
 -- Tree representation
@@ -113,7 +117,7 @@ data Snailfish
   | Pair Snailfish Snailfish
   deriving (Show)
 
-toSnailfish :: [Flat] -> Snailfish
+toSnailfish :: [Flat] -> Maybe Snailfish
 toSnailfish = treeMap Val Pair
 
 main =
