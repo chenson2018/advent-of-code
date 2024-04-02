@@ -1,4 +1,4 @@
-import Control.Monad.Trans.State.Lazy
+import Control.Monad.State.Lazy
 import Data.Maybe (fromJust)
 import Parsing
 
