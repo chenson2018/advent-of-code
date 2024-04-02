@@ -16,14 +16,14 @@ flat depth =
     return [Flat depth val]
     <|> do
       symbol "["
-      l <- flat (depth + 1)
+      l <- flat $ depth + 1
       symbol ","
-      r <- flat (depth + 1)
+      r <- flat $ depth + 1
       symbol "]"
       return $ l ++ r
 
 parseFlat :: String -> Maybe ([Flat], String)
-parseFlat = parse $ flat (-1)
+parseFlat = parse $ flat 0
 
 -- splitting calculation
 divRound :: Int -> (Int, Int)
@@ -39,29 +39,29 @@ divRound i
 step :: [Flat] -> [Flat]
 -- case for far right explosion
 step
-  ( Flat 4 val_el
-      : Flat 4 val_er
+  ( Flat 5 val_el
+      : Flat 5 val_er
       : Flat depth_r val_r
       : tl
     ) =
-    Flat 3 0 : Flat depth_r (val_er + val_r) : tl
+    Flat 4 0 : Flat depth_r (val_er + val_r) : tl
 -- case for middle explosion
 step
   ( Flat depth_l val_l
-      : Flat 4 val_el
-      : Flat 4 val_er
+      : Flat 5 val_el
+      : Flat 5 val_er
       : Flat depth_r val_r
       : tl
     ) =
-    Flat depth_l (val_el + val_l) : Flat 3 0 : Flat depth_r (val_er + val_r) : tl
+    Flat depth_l (val_el + val_l) : Flat 4 0 : Flat depth_r (val_er + val_r) : tl
 -- case for far left explosion
 step
   ( Flat depth_l val_l
-      : Flat 4 val_el
-      : Flat 4 val_er
+      : Flat 5 val_el
+      : Flat 5 val_er
       : tl
     ) =
-    Flat depth_l (val_el + val_l) : Flat 3 0 : tl
+    Flat depth_l (val_el + val_l) : Flat 4 0 : tl
 -- case for split or continue
 step (x@(Flat depth val) : xs)
   | val >= 10 = Flat (depth + 1) l : Flat (depth + 1) r : xs
@@ -103,7 +103,7 @@ mapAtDepth depth leaf node xs@((Flat d v) : tl)
 
 treeMap :: (Int -> a) -> (a -> a -> a) -> [Flat] -> Maybe a
 treeMap leaf node xs =
-  case mapAtDepth (-1) leaf node xs of
+  case mapAtDepth 0 leaf node xs of
     (a, []) -> Just a
     _ -> Nothing
 
