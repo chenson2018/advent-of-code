@@ -1,3 +1,4 @@
+import Control.Monad.Trans.State.Lazy
 import Data.Maybe (fromJust)
 import Parsing
 
@@ -87,23 +88,32 @@ sumReduce a b = reduction $ inc_depth $ a ++ b
   where
     inc_depth = map (\x@Flat {depth} -> x {depth = depth + 1})
 
--- this generally collects [Flat] according to its tree structure
+-- this generally accumulates a generic State from [Flat] according to its tree structure
 -- parameters leaf and node are functions to handle each case
 -- inspired by `unflatten` at: https://www.reddit.com/r/haskell/comments/rizwa7/comment/hp14g7i/
--- seems similar to State monad?
-mapAtDepth :: Int -> (Int -> a) -> (a -> a -> a) -> [Flat] -> (a, [Flat])
-mapAtDepth depth leaf node xs@((Flat d v) : tl)
-  | depth == d = (leaf v, tl)
-  | otherwise = (node l r, tl'')
-  where
-    next = mapAtDepth (depth + 1) leaf node
-    (l, tl') = next xs
-    (r, tl'') = next tl'
+
+{- ORMOLU_DISABLE -}
+
+treeMapAtDepth :: Int -> (Int -> a) -> (a -> a -> a) -> [Flat] -> State (Maybe a) [Flat]
+treeMapAtDepth depth leaf node xs@(Flat d v : tl) =
+  state
+    ( \a ->
+        if d == depth
+        then 
+          (tl, Just $ leaf v)
+        else
+          let next fs = (runState $ treeMapAtDepth (depth + 1) leaf node fs) a in 
+          let (tl', l) = next xs in 
+          let (tl'', r) = next tl' in 
+          (tl'', node <$> l <*> r)
+    )
+
+{- ORMOLU_ENABLE -}
 
 treeMap :: (Int -> a) -> (a -> a -> a) -> [Flat] -> Maybe a
 treeMap leaf node xs =
-  case mapAtDepth 0 leaf node xs of
-    (a, []) -> Just a
+  case runState (treeMapAtDepth 0 leaf node xs) Nothing of
+    ([], Just a) -> Just a
     _ -> Nothing
 
 magnitude :: [Flat] -> Maybe Int
@@ -118,6 +128,26 @@ data Snailfish
 
 toSnailfish :: [Flat] -> Maybe Snailfish
 toSnailfish = treeMap Val Pair
+
+{-
+-- Here are versions not using State
+-- note how the subtlety of the initial value disappears...
+
+treeMapAtDepth' :: Int -> (Int -> a) -> (a -> a -> a) -> [Flat] -> (a, [Flat])
+treeMapAtDepth' depth leaf node xs@((Flat d v) : tl)
+  | depth == d = (leaf v, tl)
+  | otherwise = (node l r, tl'')
+  where
+    next = treeMapAtDepth' (depth + 1) leaf node
+    (l, tl') = next xs
+    (r, tl'') = next tl'
+
+treeMap' :: (Int -> a) -> (a -> a -> a) -> [Flat] -> Maybe a
+treeMap' leaf node xs =
+  case treeMapAtDepth' 0 leaf node xs of
+    (a, []) -> Just a
+    _ -> Nothing
+-}
 
 main =
   do
