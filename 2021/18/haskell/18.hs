@@ -94,15 +94,15 @@ sumReduce a b = reduction $ inc_depth $ a ++ b
 
 {- ORMOLU_DISABLE -}
 
-treeMapAtDepth :: Int -> (Int -> a) -> (a -> a -> a) -> [Flat] -> State (Maybe a) [Flat]
+treeMapAtDepth :: Int -> (Int -> s) -> (s -> s -> s) -> [Flat] -> State (Maybe s) [Flat]
 treeMapAtDepth depth leaf node xs@(Flat d v : tl) =
   state
-    ( \a ->
+    ( \s ->
         if d == depth
         then 
           (tl, Just $ leaf v)
         else
-          let next fs = (runState $ treeMapAtDepth (depth + 1) leaf node fs) a in 
+          let next fs = (runState $ treeMapAtDepth (depth + 1) leaf node fs) s in 
           let (tl', l) = next xs in 
           let (tl'', r) = next tl' in 
           (tl'', node <$> l <*> r)
@@ -110,10 +110,10 @@ treeMapAtDepth depth leaf node xs@(Flat d v : tl) =
 
 {- ORMOLU_ENABLE -}
 
-treeMap :: (Int -> a) -> (a -> a -> a) -> [Flat] -> Maybe a
+treeMap :: (Int -> s) -> (s -> s -> s) -> [Flat] -> Maybe s
 treeMap leaf node xs =
   case runState (treeMapAtDepth 0 leaf node xs) Nothing of
-    ([], Just a) -> Just a
+    ([], Just s) -> Just s
     _ -> Nothing
 
 magnitude :: [Flat] -> Maybe Int
@@ -129,25 +129,23 @@ data Snailfish
 toSnailfish :: [Flat] -> Maybe Snailfish
 toSnailfish = treeMap Val Pair
 
-{-
 -- Here are versions not using State
 -- note how the subtlety of the initial value disappears...
 
-treeMapAtDepth' :: Int -> (Int -> a) -> (a -> a -> a) -> [Flat] -> (a, [Flat])
+treeMapAtDepth' :: Int -> (Int -> s) -> (s -> s -> s) -> [Flat] -> ([Flat], s)
 treeMapAtDepth' depth leaf node xs@((Flat d v) : tl)
-  | depth == d = (leaf v, tl)
-  | otherwise = (node l r, tl'')
+  | depth == d = (tl, leaf v)
+  | otherwise = (tl'', node l r)
   where
     next = treeMapAtDepth' (depth + 1) leaf node
-    (l, tl') = next xs
-    (r, tl'') = next tl'
+    (tl', l) = next xs
+    (tl'', r) = next tl'
 
-treeMap' :: (Int -> a) -> (a -> a -> a) -> [Flat] -> Maybe a
+treeMap' :: (Int -> s) -> (s -> s -> s) -> [Flat] -> Maybe s
 treeMap' leaf node xs =
   case treeMapAtDepth' 0 leaf node xs of
-    (a, []) -> Just a
+    ([], s) -> Just s
     _ -> Nothing
--}
 
 main =
   do
