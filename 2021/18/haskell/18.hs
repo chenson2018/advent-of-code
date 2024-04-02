@@ -1,4 +1,3 @@
-import Data.Function (on)
 import Data.Maybe (fromJust)
 import Parsing
 
@@ -84,7 +83,7 @@ reduction = last . iterateUntilRepeat step
 
 -- add and reduce two values
 sumReduce :: [Flat] -> [Flat] -> [Flat]
-sumReduce a b = reduction $ ((++) `on` inc_depth) a b
+sumReduce a b = reduction $ inc_depth $ a ++ b
   where
     inc_depth = map (\x@Flat {depth} -> x {depth = depth + 1})
 
