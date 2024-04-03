@@ -24,8 +24,8 @@ flat depth parseT =
 
 {- ORMOLU_ENABLE -}
 
-parseFlatInt :: String -> Maybe ([Flat Int], String)
-parseFlatInt = parse $ flat 0 integer
+parseFlat :: Parser t -> Parser [Flat t]
+parseFlat = flat 0
 
 -- splitting calculation
 divRound :: Int -> (Int, Int)
@@ -107,6 +107,6 @@ unflatten = treeMap Val Pair
 
 main =
   do
-    input@(hd : tl) <- map fst . fromJust . mapM parseFlatInt . lines <$> readFile "../input.txt"
+    input@(hd : tl) <- map fst . fromJust . mapM (parse $ parseFlat integer) . lines <$> readFile "../input.txt"
     print $ magnitude $ foldl sumReduce hd tl
     print $ maximum $ map magnitude $ sumReduce <$> input <*> input
