@@ -96,17 +96,18 @@ sumReduce a b = reduction $ inc_depth $ a ++ b
 
 treeMapAtDepth :: Int -> (Int -> s) -> (s -> s -> s) -> [Flat] -> State (Maybe s) [Flat]
 treeMapAtDepth depth leaf node xs@(Flat d v : tl) =
-  state
-    ( \s ->
-        if d == depth
-        then 
-          (tl, Just $ leaf v)
-        else
-          let next fs = (runState $ treeMapAtDepth (depth + 1) leaf node fs) s in 
-          let (tl', l) = next xs in 
-          let (tl'', r) = next tl' in 
-          (tl'', node <$> l <*> r)
-    )
+  if depth == d
+    then 
+      do put $ Just $ leaf v
+         return tl
+    else 
+      let next fs = runState $ treeMapAtDepth (depth + 1) leaf node fs in 
+      do s <- get
+         let (tl', l) = next xs s
+         let (tl'', r) = next tl' s
+         put $ node <$> l <*> r
+         return tl''
+treeMapAtDepth _ _ _ [] = state ([],)
 
 {- ORMOLU_ENABLE -}
 
