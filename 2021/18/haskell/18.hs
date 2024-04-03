@@ -92,24 +92,21 @@ sumReduce a b = reduction $ inc_depth $ a ++ b
 -- parameters leaf and node are functions to handle each case
 -- inspired by `unflatten` at: https://www.reddit.com/r/haskell/comments/rizwa7/comment/hp14g7i/
 
-{- ORMOLU_DISABLE -}
-
 treeMapAtDepth :: Int -> (Int -> s) -> (s -> s -> s) -> [Flat] -> State (Maybe s) [Flat]
 treeMapAtDepth depth leaf node xs@(Flat d v : tl) =
   if depth == d
-  then 
-    do put $ Just $ leaf v
-       return tl
-  else 
-    let next fs = runState $ treeMapAtDepth (depth + 1) leaf node fs in 
-    do s <- get
-       let (tl', l) = next xs s
-       let (tl'', r) = next tl' s
-       put $ node <$> l <*> r
-       return tl''
+    then do
+      put $ Just $ leaf v
+      return tl
+    else do
+      let next = treeMapAtDepth (depth + 1) leaf node
+      xs <- next xs
+      l <- get
+      xs <- next xs
+      r <- get
+      put $ node <$> l <*> r
+      return xs
 treeMapAtDepth _ _ _ [] = state ([],)
-
-{- ORMOLU_ENABLE -}
 
 treeMap :: (Int -> s) -> (s -> s -> s) -> [Flat] -> Maybe s
 treeMap leaf node xs =
