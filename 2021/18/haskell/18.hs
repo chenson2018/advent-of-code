@@ -1,29 +1,31 @@
 import Control.Monad.State.Lazy
+import Data.Bifunctor
 import Data.Maybe (fromJust)
 import Parsing
 
 -- parse the trees into a flat list of depths and values
-data Flat = Flat
-  { depth :: Int,
-    val :: Int
-  }
-  deriving (Show, Eq)
+type Flat t = (Int, t)
 
-flat :: Int -> Parser [Flat]
-flat depth =
+{- ORMOLU_DISABLE -}
+
+flat :: Int -> Parser t -> Parser [Flat t]
+flat depth parseT =
   do
-    val <- integer
-    return [Flat depth val]
-    <|> do
-      symbol "["
-      l <- flat $ depth + 1
-      symbol ","
-      r <- flat $ depth + 1
-      symbol "]"
-      return $ l ++ r
+    val <- parseT
+    return [(depth, val)]
+    <|> 
+  do
+    symbol "["
+    l <- flat (depth + 1) parseT
+    symbol ","
+    r <- flat (depth + 1) parseT
+    symbol "]"
+    return $ l ++ r
 
-parseFlat :: String -> Maybe ([Flat], String)
-parseFlat = parse $ flat 0
+{- ORMOLU_ENABLE -}
+
+parseFlatInt :: String -> Maybe ([Flat Int], String)
+parseFlatInt = parse $ flat 0 integer
 
 -- splitting calculation
 divRound :: Int -> (Int, Int)
@@ -36,39 +38,18 @@ divRound i
 -- single step of a reduction
 -- note the tricky order of pattern matching
 
-step :: [Flat] -> [Flat]
--- case for far right explosion
-step
-  ( Flat 5 val_el
-      : Flat 5 val_er
-      : Flat depth_r val_r
-      : tl
-    ) =
-    Flat 4 0 : Flat depth_r (val_er + val_r) : tl
--- case for middle explosion
-step
-  ( Flat depth_l val_l
-      : Flat 5 val_el
-      : Flat 5 val_er
-      : Flat depth_r val_r
-      : tl
-    ) =
-    Flat depth_l (val_el + val_l) : Flat 4 0 : Flat depth_r (val_er + val_r) : tl
--- case for far left explosion
-step
-  ( Flat depth_l val_l
-      : Flat 5 val_el
-      : Flat 5 val_er
-      : tl
-    ) =
-    Flat depth_l (val_el + val_l) : Flat 4 0 : tl
--- case for split or continue
-step (x@(Flat depth val) : xs)
-  | val >= 10 = Flat (depth + 1) l : Flat (depth + 1) r : xs
+{- ORMOLU_DISABLE -}
+
+step :: [Flat Int] -> [Flat Int]
+step (          (5, el) : (5, er) : (dr, r) : tl) =                (4, 0) : (dr, er + r) : tl
+step ((dl, l) : (5, el) : (5, er) : (dr, r) : tl) = (dl, el + l) : (4, 0) : (dr, er + r) : tl
+step ((dl, l) : (5, el) : (5, er)           : tl) = (dl, el + l) : (4, 0) :                tl
+step (x : xs)
+  | snd x >= 10 = bimap (+ 1) (fst . divRound) x : bimap (+ 1) (snd . divRound) x : xs
   | otherwise = x : step xs
-  where
-    (l, r) = divRound val
 step [] = []
+
+{- ORMOLU_ENABLE -}
 
 -- generic iterate that stops on consecutive repeated value
 iterateUntilRepeat :: (Eq a) => (a -> a) -> a -> [a]
@@ -79,21 +60,19 @@ iterateUntilRepeat f init
     next = f init
 
 -- reduction steps until stable
-reduction :: [Flat] -> [Flat]
+reduction :: [Flat Int] -> [Flat Int]
 reduction = last . iterateUntilRepeat step
 
 -- add and reduce two values
-sumReduce :: [Flat] -> [Flat] -> [Flat]
-sumReduce a b = reduction $ inc_depth $ a ++ b
-  where
-    inc_depth = map (\x@Flat {depth} -> x {depth = depth + 1})
+sumReduce :: [Flat Int] -> [Flat Int] -> [Flat Int]
+sumReduce a b = reduction $ map (first (+ 1)) $ a ++ b
 
 -- this generally accumulates a generic State from [Flat] according to its tree structure
 -- parameters leaf and node are functions to handle each case
 -- inspired by `unflatten` at: https://www.reddit.com/r/haskell/comments/rizwa7/comment/hp14g7i/
 
-treeMapAtDepth :: Int -> (Int -> s) -> (s -> s -> s) -> [Flat] -> State (Maybe s) [Flat]
-treeMapAtDepth depth leaf node xs@(Flat d v : tl) =
+treeMapAtDepth :: Int -> (t -> s) -> (s -> s -> s) -> [Flat t] -> State (Maybe s) [Flat t]
+treeMapAtDepth depth leaf node xs@((d, v) : tl) =
   if depth == d
     then do
       put $ Just $ leaf v
@@ -108,27 +87,27 @@ treeMapAtDepth depth leaf node xs@(Flat d v : tl) =
       return xs
 treeMapAtDepth _ _ _ [] = state ([],)
 
-treeMap :: (Int -> s) -> (s -> s -> s) -> [Flat] -> Maybe s
+treeMap :: (t -> s) -> (s -> s -> s) -> [Flat t] -> Maybe s
 treeMap leaf node xs =
   case runState (treeMapAtDepth 0 leaf node xs) Nothing of
     ([], Just s) -> Just s
     _ -> Nothing
 
-magnitude :: [Flat] -> Maybe Int
+magnitude :: [Flat Int] -> Maybe Int
 magnitude = treeMap id (\l r -> 3 * l + 2 * r)
 
 -- Tree representation
 -- not used, just an example of the generality of treeMap
-data Snailfish
-  = Val Int
-  | Pair Snailfish Snailfish
+data Tree t
+  = Val t
+  | Pair (Tree t) (Tree t)
   deriving (Show)
 
-toSnailfish :: [Flat] -> Maybe Snailfish
-toSnailfish = treeMap Val Pair
+unflatten :: [Flat t] -> Maybe (Tree t)
+unflatten = treeMap Val Pair
 
 main =
   do
-    input@(hd : tl) <- map fst . fromJust . mapM parseFlat . lines <$> readFile "../input.txt"
+    input@(hd : tl) <- map fst . fromJust . mapM parseFlatInt . lines <$> readFile "../input.txt"
     print $ magnitude $ foldl sumReduce hd tl
     print $ maximum $ map magnitude $ sumReduce <$> input <*> input
