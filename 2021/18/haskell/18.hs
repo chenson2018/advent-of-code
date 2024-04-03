@@ -67,7 +67,7 @@ reduction = last . iterateUntilRepeat step
 sumReduce :: [Flat Int] -> [Flat Int] -> [Flat Int]
 sumReduce a b = reduction $ map (first (+ 1)) $ a ++ b
 
--- this generally accumulates a generic State from [Flat] according to its tree structure
+-- this generally accumulates a generic State from [Flat t] according to its tree structure
 -- parameters leaf and node are functions to handle each case
 -- inspired by `unflatten` at: https://www.reddit.com/r/haskell/comments/rizwa7/comment/hp14g7i/
 
