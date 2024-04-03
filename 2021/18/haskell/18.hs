@@ -13,7 +13,7 @@ flat depth parseT =
   do
     val <- parseT
     return [(depth, val)]
-    <|> 
+  <|> 
   do
     symbol "["
     l <- flat (depth + 1) parseT
