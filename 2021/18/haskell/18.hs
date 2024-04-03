@@ -79,10 +79,9 @@ treeMapAtDepth depth leaf node xs@((d, v) : tl) =
       return tl
     else do
       let next = treeMapAtDepth (depth + 1) leaf node
-      xs <- next xs
-      l <- get
-      xs <- next xs
-      r <- get
+      let branch xs = do xs <- next xs; b <- get; return (xs, b)
+      (xs, l) <- branch xs
+      (xs, r) <- branch xs
       put $ node <$> l <*> r
       return xs
 treeMapAtDepth _ _ _ [] = state ([],)
