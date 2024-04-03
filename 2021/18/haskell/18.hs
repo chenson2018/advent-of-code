@@ -130,24 +130,6 @@ data Snailfish
 toSnailfish :: [Flat] -> Maybe Snailfish
 toSnailfish = treeMap Val Pair
 
--- Here are versions not using State
--- note how the subtlety of the initial value disappears...
-
-treeMapAtDepth' :: Int -> (Int -> s) -> (s -> s -> s) -> [Flat] -> ([Flat], s)
-treeMapAtDepth' depth leaf node xs@((Flat d v) : tl)
-  | depth == d = (tl, leaf v)
-  | otherwise = (tl'', node l r)
-  where
-    next = treeMapAtDepth' (depth + 1) leaf node
-    (tl', l) = next xs
-    (tl'', r) = next tl'
-
-treeMap' :: (Int -> s) -> (s -> s -> s) -> [Flat] -> Maybe s
-treeMap' leaf node xs =
-  case treeMapAtDepth' 0 leaf node xs of
-    ([], s) -> Just s
-    _ -> Nothing
-
 main =
   do
     input@(hd : tl) <- map fst . fromJust . mapM parseFlat . lines <$> readFile "../input.txt"
