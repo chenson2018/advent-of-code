@@ -48,18 +48,21 @@ process m Ins {target, change, condReg, cond} =
   else 
     m
 
-regMaxGlobal :: [Ins] -> State (M.Map String Int, Int) [Ins]
-regMaxGlobal (ins : tl) = 
+-- generic over
+--  `extract` - that does some calculation over the registers
+--  `comp`    - decides how to combine the results of successive `extract`
+regMaxGlobal :: (M.Map String Int -> a) -> (a -> a -> a) -> [Ins] -> State (M.Map String Int, a) [Ins]
+regMaxGlobal extract comp (ins : tl) = 
   do (m, global) <- get
      let m' = process m ins
-     let global' = max global (maximum m')
+     let global' = comp global (extract m')
      put (m', global')
-     regMaxGlobal tl
-regMaxGlobal [] = state ([],)
+     regMaxGlobal extract comp tl
+regMaxGlobal _ _ [] = state ([],)
 
 main = 
   do 
      input <- Prelude.map fst . fromJust . Prelude.mapM (parse ins) . lines <$> readFile "../input.txt"
-     let (m, global) = execState (regMaxGlobal input) (M.empty, 0)
+     let (m, global) = execState (regMaxGlobal maximum max input) (M.empty, 0)
      print $ maximum m
      print global
