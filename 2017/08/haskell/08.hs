@@ -62,7 +62,7 @@ registerFold _ _ [] = state ([],)
 
 main = 
   do 
-     input <- Prelude.map fst . fromJust . Prelude.mapM (parse ins) . lines <$> readFile "../input.txt"
+     input <- map fst . fromJust . mapM (parse ins) . lines <$> readFile "../input.txt"
      let (m, global) = execState (registerFold maximum max input) (M.empty, 0)
      print $ maximum m
      print global
