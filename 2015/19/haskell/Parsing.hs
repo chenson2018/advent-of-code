@@ -140,3 +140,13 @@ integer = token int
 
 symbol :: String -> Parser String
 symbol xs = token (string xs)
+
+list :: String -> Parser t -> Parser [t]
+list sep parseT =
+  many
+    ( do
+        t <- parseT
+        symbol sep
+        return t
+        <|> parseT
+    )
