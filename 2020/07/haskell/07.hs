@@ -23,9 +23,7 @@ line =
 
 containsBag :: M.Map String [String] -> String -> [String] -> Bool
 containsBag m goal [] = False
-containsBag m goal (key : xs)
-  | key == goal = True
-  | otherwise = containsBag m goal (m M.! key ++ xs)
+containsBag m goal (key : xs) = key == goal || containsBag m goal (m M.! key ++ xs)
 
 p1 :: M.Map String [String] -> String -> Int
 p1 m goal = subtract 1 $ length $ M.filterWithKey (\k _ -> containsBag m goal [k]) m
