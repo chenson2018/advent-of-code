@@ -43,7 +43,7 @@ p2 m bag = execState (countBags m [(bag, 1)]) 0
 
 main =
   do
-    input <- M.fromList . map fst . fromJust . mapM (parse line) . lines <$> readFile "../input.txt"
+    input <- M.fromList . parseListJust line . lines <$> readFile "../input.txt"
     let bags_only = M.map (map fst) input
     print $ p1 bags_only "shiny gold"
     print $ p2 input "shiny gold"

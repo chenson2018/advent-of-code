@@ -55,8 +55,8 @@ parseInput :: String -> (Set.Set (Int, Int), [Fold])
 parseInput s = (c, f)
   where
     (raw_coor, _ : raw_fold) = (\xs -> splitAt (fromJust $ elemIndex "" xs) xs) . lines $ s
-    c = Set.fromList $ map fst $ fromJust $ mapM (parse coor) raw_coor
-    f = map fst $ fromJust $ mapM (parse foldP) raw_fold
+    c = Set.fromList $ parseListJust coor raw_coor
+    f = parseListJust foldP raw_fold
 
 main =
   do

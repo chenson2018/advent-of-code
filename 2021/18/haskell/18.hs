@@ -107,6 +107,6 @@ unflatten = treeMap Val Pair
 
 main =
   do
-    input <- map fst . fromJust . mapM (parse $ parseFlat integer) . lines <$> readFile "../input.txt"
+    input <- parseListJust (parseFlat integer) . lines <$> readFile "../input.txt"
     print $ magnitude $ foldl1 sumReduce input
     print $ maximum $ map magnitude $ sumReduce <$> input <*> input

@@ -65,7 +65,7 @@ imbalance (Node v xs) =
 
 main =
   do
-    input <- map fst . fromJust . mapM (parse line) . lines <$> readFile "../input.txt"
+    input <- parseListJust line . lines <$> readFile "../input.txt"
     let (weights, paths) = getMaps input
     let [bot] = roots weights paths
     let weightTree = (weights M.!) <$> toTree paths bot

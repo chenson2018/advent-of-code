@@ -21,6 +21,6 @@ isCaught wait depth range = 0 == (depth + wait) `mod` (2 * range - 2)
 
 main =
   do
-    input <- M.fromList . map fst . fromJust . mapM (parse line) . lines <$> readFile "../input.txt"
+    input <- M.fromList . parseListJust line . lines <$> readFile "../input.txt"
     print $ sum $ M.mapWithKey severity input
     print $ findIndex id $ map (\w -> not $ or $ M.elems $ M.mapWithKey (isCaught w) input) [0 ..]

@@ -8,6 +8,7 @@ module Parsing (module Parsing, module Control.Applicative) where
 
 import Control.Applicative
 import Data.Char
+import Data.Maybe (fromJust)
 
 -- Basic definitions
 
@@ -150,3 +151,6 @@ list sep parseT =
         return t
         <|> parseT
     )
+
+parseListJust :: Parser a -> [String] -> [a]
+parseListJust p xs = map fst $ fromJust $ mapM (parse p) xs

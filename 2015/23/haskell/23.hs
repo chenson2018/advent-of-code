@@ -91,6 +91,6 @@ run program line registers =
     Nothing -> Nothing
 
 main = do
-  program <- initProgram . map fst . fromJust . mapM (parse ins) . lines <$> readFile "../input.txt"
+  program <- initProgram . parseListJust ins . lines <$> readFile "../input.txt"
   print (run program 0 R {a = 0, b = 0})
   print (run program 0 R {a = 1, b = 0})

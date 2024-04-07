@@ -63,6 +63,5 @@ trunc limit Ins {turn, x_range, y_range, z_range} =
 
 main =
   do
-    input <- map fst . fromJust . mapM (parse ins) . lines <$> readFile "../test.txt"
-    input <- map fst . fromJust . mapM (parse ins) . lines <$> readFile "../input.txt"
+    input <- parseListJust ins . lines <$> readFile "../input.txt"
     print $ length $ foldl processIns Set.empty $ mapMaybe (trunc 50) input

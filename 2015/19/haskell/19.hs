@@ -30,5 +30,5 @@ iter mappings xs = concat $ replace <$> xs <*> mappings
 
 main = do
   (input : _ : mappings_raw) <- reverse . lines <$> readFile "../input.txt"
-  let mappings = map fst $ fromJust $ mapM (parse chemMap) mappings_raw
+  let mappings = parseListJust chemMap mappings_raw
   print (length $ rmdups $ iter mappings [input])
