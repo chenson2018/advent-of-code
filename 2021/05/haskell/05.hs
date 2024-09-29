@@ -34,12 +34,15 @@ slope Line {x1, y1, x2, y2}
   | x1 == x2 = Nothing
   | otherwise = Just $ ((-) `on` toRational) y2 y1 / ((-) `on` toRational) x2 x1
 
-pointsHV line@(Line {x1, y1, x2, y2})
+points line@(Line {x1, y1, x2, y2})
   | isHorizontal line = zip [min x1 x2 .. max x1 x2] (repeat y1)
   | isVertical line = zip (repeat x1) [min y1 y2 .. max y1 y2]
-  | otherwise = []
+  | otherwise =
+      let f cond = if cond then id else reverse
+       in zip (f (x1 < x2) [min x1 x2 .. max x1 x2]) (f (y1 < y2) [min y1 y2 .. max y1 y2])
 
 main = do
-  input <- map fst . fromJust . mapM (parse line) . lines <$> readFile "../test.txt"
   input <- map fst . fromJust . mapM (parse line) . lines <$> readFile "../input.txt"
-  print $ length $ filter ((> 1) . length) $ group $ sort $ concat $ map pointsHV $ filter (\x -> isVertical x || isHorizontal x) input
+  let count_dups = (length . filter ((> 1) . length) . group . sort . concat . map points)
+  print $ count_dups $ filter (\l -> isHorizontal l || isVertical l) input
+  print $ count_dups $ input
