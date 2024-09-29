@@ -43,6 +43,6 @@ points line@(Line {x1, y1, x2, y2})
 
 main = do
   input <- map fst . fromJust . mapM (parse line) . lines <$> readFile "../input.txt"
-  let count_dups = (length . filter ((> 1) . length) . group . sort . concat . map points)
+  let count_dups = length . filter ((> 1) . length) . group . sort . concat . map points
   print $ count_dups $ filter (\l -> isHorizontal l || isVertical l) input
   print $ count_dups $ input
