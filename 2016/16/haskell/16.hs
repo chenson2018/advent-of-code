@@ -1,7 +1,6 @@
 import Data.List
 
-swap 0 = 1
-swap 1 = 0
+swap = (`mod` 2) . (+ 1)
 
 iter a = a ++ 0 : (map swap . reverse) a
 
