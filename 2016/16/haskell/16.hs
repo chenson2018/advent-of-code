@@ -9,7 +9,7 @@ checksum xs
   | length xs `mod` 2 == 1 = xs
   | otherwise = checksum $ aux xs
   where
-    aux (a : b : xs) = (if a == b then 1 else 0) : aux xs
+    aux (a : b : xs) = (fromEnum (a == b)) : aux xs
     aux [] = []
 
 p1 init len = do
