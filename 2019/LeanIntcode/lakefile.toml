@@ -1,0 +1,10 @@
+name = "LeanIntcode"
+version = "0.1.0"
+defaultTargets = ["leanintcode"]
+
+[[lean_lib]]
+name = "LeanIntcode"
+
+[[lean_exe]]
+name = "leanintcode"
+root = "Main"
