@@ -16,8 +16,8 @@ def day2 : IO Unit := do
   -- precomputed part 2
   let (p2_noun, p2_verb) := (76, 10)
   let p2 ← noun_verb data p2_noun p2_verb
-  assert! p2 = 19690720
-  println! s!"Day 2, Part 1 answer : {p1}"
+  assert! p2 = some 19690720
+  println! s!"Day 2, Part 1 answer : {p1.get!}"
   println! s!"Day 2, Part 2 answer : {p2_noun * 100 + p2_verb}"
   println! ""
 
