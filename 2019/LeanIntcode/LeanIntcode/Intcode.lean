@@ -33,7 +33,7 @@ inductive Opcode where
 | JumpFalse 
 | Less 
 | Equal 
-deriving Repr
+deriving Repr, DecidableEq
 
 inductive Mode where 
 | Imm 
@@ -123,6 +123,19 @@ def tick (vm : Intcode) : OptionT IO Intcode := do
 
 /-- executes opcodes until VM halts -/
 def run := bindUntil Intcode.halted tick
+
+open Opcode in 
+partial def run_until_output (vm : Intcode) : OptionT IO (Intcode × Int) := do
+  let raw_opcode ← hoistOption (vm.data.get? vm.ptr)
+  let opcode ← hoistOption (raw_opcode % 100).toOpcode?
+  let vm ← vm.tick
+  if opcode = Halt ∨ opcode = Out
+  then
+    match vm.output with
+    | out :: _ => pure (vm,out)
+    | []       => hoistOption none
+  else
+    run_until_output vm
 
 end Intcode
 

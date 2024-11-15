@@ -34,6 +34,7 @@ def day5 : IO Unit := do
   println! ""
 
 -- Day 7
+-- experimenting with the imperative features
 def day7 : IO Unit := do
   -- works for sample but not real input...
   let input ← IO.FS.readFile "../07/input.txt"
@@ -53,8 +54,40 @@ def day7 : IO Unit := do
   assert! p1_ans = 65464
   println! s!"Day 7, Part 1 answer : {p1_ans}"
 
-def main : IO Unit := do
-  -- day2
-  -- day5
-  day7
+  -- part 2
+  let mut res2 := []
 
+  for perm in [5, 6, 7, 8, 9].permutations do
+    let mut amps : Array Intcode := #[]
+    let mut signal := 0
+
+    for phase in perm do
+      let vm := Intcode.new data (input := [phase, signal]) (silent := true)
+      let (vm, signal') := (← vm.run_until_output).get!
+      signal := signal'
+      amps := amps.push vm
+
+    -- set the first signal
+    amps := amps.set! 0 (let v := amps.get! 0; {v with input := [signal]})
+
+    -- pure signals
+    let mut idx := 0
+    while !(amps.get! 4).halted do
+      let (vm,signal') := (← (amps.get! idx).run_until_output).get!
+      signal := signal'
+      amps := amps.set! idx vm
+      let next_idx := (idx + 1) % 5
+      let next_vm  := amps.get! next_idx
+      amps := amps.set! next_idx {next_vm with input := signal :: next_vm.input}
+      idx := (idx + 1) % 5
+    res2 := signal :: res2
+  
+  let p2_ans := res2.max?.get!
+  assert! p2_ans = 1518124
+  println! s!"Day 7, Part 2 answer : {p2_ans}"
+  println! ""
+
+def main : IO Unit := do
+  day2
+  day5
+  day7
