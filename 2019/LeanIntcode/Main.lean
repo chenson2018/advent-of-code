@@ -36,12 +36,10 @@ def day5 : IO Unit := do
 -- Day 7
 def day7 : IO Unit := do
   -- works for sample but not real input...
-  -- let input ← IO.FS.readFile "../07/input.txt"
-  -- let data := Array.map String.toInt! (List.toArray (input.trim.splitOn (sep := ",")))
-  -- let data := #[3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0]
-  -- let data := #[3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0]
-  let data := #[3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0]
+  let input ← IO.FS.readFile "../07/input.txt"
+  let data := Array.map String.toInt! (List.toArray (input.trim.splitOn (sep := ",")))
 
+  -- part 1
   let mut res := []
   for perm in [0, 1, 2, 3, 4].permutations do
     let mut out := []
@@ -50,10 +48,13 @@ def day7 : IO Unit := do
       let vm ← vm.run
       out := vm.get!.output.get! 0 :: out
     res := out.max? :: res
-  println! (List.reduceOption res).max?
+  
+  let p1_ans := (List.reduceOption res).max?.get!
+  assert! p1_ans = 65464
+  println! s!"Day 7, Part 1 answer : {p1_ans}"
 
 def main : IO Unit := do
-  day2
-  day5
+  -- day2
+  -- day5
   day7
 

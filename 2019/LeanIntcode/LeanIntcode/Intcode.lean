@@ -91,7 +91,7 @@ def tick (vm : Intcode) : OptionT IO Intcode := do
 
   -- a utility for the simple opcodes
   let advance := vm.ptr + opcode.len + 1
-  let try_set (idx val : Int) (advance := advance) (input := []) := do
+  let try_set (idx val : Int) (advance := advance) (input := vm.input) := do
     let data ← hoistOption 
       (match Nat.decLt idx.natAbs vm.data.size with
         | isTrue h => some (vm.data.set ⟨idx.natAbs, h⟩ val)
