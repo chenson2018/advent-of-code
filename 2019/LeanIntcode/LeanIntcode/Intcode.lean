@@ -21,7 +21,11 @@ partial def bindUntil [Monad m] (cond : A → Bool) (iter : A → m A) (a : A) :
   if cond a then pure a else iter a >>= bindUntil cond iter
 
 /-- lift any optional type into OptionT -/
-def hoistOption [Monad m] : Option T → OptionT m T := OptionT.mk ∘ pure
+def hoistOption [Pure m] : Option T → OptionT m T := OptionT.mk ∘ pure
+
+-- see https://leanprover.zulipchat.com/#narrow/channel/217875-Is-there-code-for-X.3F/topic/Equivalent.20to.20Haskell's.20hoistMaybe
+instance {m} [Pure m] : MonadLift Option (OptionT m) where
+  monadLift := hoistOption
 
 inductive Opcode where 
 | Add 
@@ -74,16 +78,16 @@ def new (data : Array Int) (input := @List.nil Int) (silent := false) : Intcode 
 /-- execute one opcode -/
 def tick (vm : Intcode) : OptionT IO Intcode := do
   -- read the raw opcode
-  let raw_opcode ← hoistOption (vm.data.get? vm.ptr)
+  let raw_opcode ← vm.data.get? vm.ptr
 
   -- the last two digits are the opcode
-  let opcode ← hoistOption (raw_opcode % 100).toOpcode?
+  let opcode ← (raw_opcode % 100).toOpcode?
 
   -- get the possible immediate values
   -- TODO: I use zero as a default value since this is eagerly evaluated, is there a better way?
-  let imm1 ← hoistOption (if 1 ≤ opcode.len then (vm.data.get? (vm.ptr + 1)) else some 0)
-  let imm2 ← hoistOption (if 2 ≤ opcode.len then (vm.data.get? (vm.ptr + 2)) else some 0)
-  let imm3 ← hoistOption (if 3 ≤ opcode.len then (vm.data.get? (vm.ptr + 3)) else some 0)
+  let imm1 ← if 1 ≤ opcode.len then (vm.data.get? (vm.ptr + 1)) else some 0
+  let imm2 ← if 2 ≤ opcode.len then (vm.data.get? (vm.ptr + 2)) else some 0
+  let imm3 ← if 3 ≤ opcode.len then (vm.data.get? (vm.ptr + 3)) else some 0
  
   -- TODO: better conversion here than .natAbs ?
   let val1 ← hoistOption (if raw_opcode.getMode 0 = Mode.Imm then imm1 else if 1 ≤ opcode.len then (vm.data.get? imm1.natAbs) else some 0)
@@ -92,10 +96,10 @@ def tick (vm : Intcode) : OptionT IO Intcode := do
   -- a utility for the simple opcodes
   let advance := vm.ptr + opcode.len + 1
   let try_set (idx val : Int) (advance := advance) (input := vm.input) := do
-    let data ← hoistOption 
-      (match Nat.decLt idx.natAbs vm.data.size with
+    let data ←
+      match Nat.decLt idx.natAbs vm.data.size with
         | isTrue h => some (vm.data.set ⟨idx.natAbs, h⟩ val)
-        | isFalse _ => none)
+        | isFalse _ => none
     pure {vm with ptr := advance, data, input}
 
   match opcode with
@@ -109,7 +113,7 @@ def tick (vm : Intcode) : OptionT IO Intcode := do
         | [] => 
           let stdin ← IO.getStdin
           let input ← stdin.getLine
-          let val ← hoistOption input.trim.toInt?
+          let val ← input.trim.toInt?
           pure (val,[])    
       try_set imm1 val (input := input)
   | Opcode.Out  => 
@@ -126,14 +130,14 @@ def run := bindUntil Intcode.halted tick
 
 open Opcode in 
 partial def run_until_output (vm : Intcode) : OptionT IO (Intcode × Int) := do
-  let raw_opcode ← hoistOption (vm.data.get? vm.ptr)
-  let opcode ← hoistOption (raw_opcode % 100).toOpcode?
+  let raw_opcode ← vm.data.get? vm.ptr
+  let opcode ← (raw_opcode % 100).toOpcode?
   let vm ← vm.tick
   if opcode = Halt ∨ opcode = Out
   then
     match vm.output with
     | out :: _ => pure (vm,out)
-    | []       => hoistOption none
+    | []       => none
   else
     run_until_output vm
 
