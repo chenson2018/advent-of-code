@@ -33,10 +33,32 @@ def day5 : IO Unit := do
   println! s!"Day 5, Part 2 answer : {p2.get!.output.head!}"
   println! ""
 
+-- Day 7
+def amplify (data : Array Int) (phases output : List Int) := do
+  match phases with
+  | phase :: phases =>
+    let vm := Intcode.new data (input := [phase, List.headD output 0]) (silent := true)
+    let vm ← vm.run
+    let out := vm.output.head!
+    pure (max out (← amplify data phases (out :: output)))
+  | _ =>
+    pure 0
+
+def List.perm (xs : List α) : List (List α) :=
+  match xs with
+  | [] => [[]]
+  | hd :: tl => List.map (List.cons hd) (tl.perm)
+
+def day7 : IO Unit := do
+  let input ← IO.FS.readFile "../07/input.txt"
+  let data := Array.map String.toInt! (List.toArray (input.trim.splitOn (sep := ",")))
+  let data := #[3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0]
+  let amps ← List.mapM (fun perm => (amplify data perm []).run) [0, 1, 2, 3, 4].permutations
+  let res := (List.reduceOption amps).max?
+  println! res
+
 def main : IO Unit := do
   day2
   day5
-  -- let vm := Intcode.new #[3,0,4,0,99]
-  -- println! (repr vm)
-  -- let vm ← vm.run
-  -- println! (repr vm)
+  day7
+

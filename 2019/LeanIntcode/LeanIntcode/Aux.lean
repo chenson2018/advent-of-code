@@ -3,9 +3,8 @@ import Lean.Elab.Command
 open Lean Parser.Tactic Parser.Tactic.Conv Elab.Tactic Meta
 open Elab Tactic
 
--- set_option trace.Meta.synthInstance true
+-- this file is all from Mathlib 
 
--- this is from Mathlib, just for conveinience
 section mathlib_tactic
   elab tk:"#conv " conv:conv " => " e:term : command =>
     Command.runTermElabM fun _ ↦ do
@@ -45,3 +44,25 @@ section mathlib_tactic
   elab tk:"#check " colGt term:term : tactic => elabCheckTactic tk true term
 end mathlib_tactic
 
+namespace List
+  def permutationsAux2 (t : α) (ts : List α) (r : List β) : List α → (List α → β) → List α × List β
+    | [], _ => (ts, r)
+    | y :: ys, f =>
+      let (us, zs) := permutationsAux2 t ts r ys (fun x : List α => f (y :: x))
+      (y :: us, f (t :: y :: us) :: zs)
+  
+  def permutationsAux.rec {C : List α → List α → Sort v} (H0 : ∀ is, C [] is)
+      (H1 : ∀ t ts is, C ts (t :: is) → C is [] → C (t :: ts) is) : ∀ l₁ l₂, C l₁ l₂
+    | [], is => H0 is
+    | t :: ts, is =>
+        H1 t ts is (permutationsAux.rec H0 H1 ts (t :: is)) (permutationsAux.rec H0 H1 is [])
+    termination_by ts is => (length ts + length is, length ts)
+    decreasing_by all_goals (simp_wf; omega)
+  
+  def permutationsAux : List α → List α → List (List α) :=
+    permutationsAux.rec (fun _ => []) fun t ts is IH1 IH2 =>
+      foldr (fun y r => (permutationsAux2 t ts r y id).2) IH1 (is :: IH2)
+  
+  def permutations (l : List α) : List (List α) :=
+    l :: permutationsAux l []
+end List

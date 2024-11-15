@@ -1,4 +1,4 @@
-import LeanIntcode.Tactic
+import LeanIntcode.Aux
 
 /-- A structure representing an Intcode virtual machine -/
 structure Intcode where
