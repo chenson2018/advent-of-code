@@ -34,28 +34,23 @@ def day5 : IO Unit := do
   println! ""
 
 -- Day 7
-def amplify (data : Array Int) (phases output : List Int) := do
-  match phases with
-  | phase :: phases =>
-    let vm := Intcode.new data (input := [phase, List.headD output 0]) (silent := true)
-    let vm ← vm.run
-    let out := vm.output.head!
-    pure (max out (← amplify data phases (out :: output)))
-  | _ =>
-    pure 0
-
-def List.perm (xs : List α) : List (List α) :=
-  match xs with
-  | [] => [[]]
-  | hd :: tl => List.map (List.cons hd) (tl.perm)
-
 def day7 : IO Unit := do
-  let input ← IO.FS.readFile "../07/input.txt"
-  let data := Array.map String.toInt! (List.toArray (input.trim.splitOn (sep := ",")))
-  let data := #[3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0]
-  let amps ← List.mapM (fun perm => (amplify data perm []).run) [0, 1, 2, 3, 4].permutations
-  let res := (List.reduceOption amps).max?
-  println! res
+  -- works for sample but not real input...
+  -- let input ← IO.FS.readFile "../07/input.txt"
+  -- let data := Array.map String.toInt! (List.toArray (input.trim.splitOn (sep := ",")))
+  -- let data := #[3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0]
+  -- let data := #[3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0]
+  let data := #[3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0]
+
+  let mut res := []
+  for perm in [0, 1, 2, 3, 4].permutations do
+    let mut out := []
+    for phase in perm do
+      let vm := Intcode.new data (input := [phase, out.headD 0]) (silent := true)
+      let vm ← vm.run
+      out := vm.get!.output.get! 0 :: out
+    res := out.max? :: res
+  println! (List.reduceOption res).max?
 
 def main : IO Unit := do
   day2
