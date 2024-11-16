@@ -36,7 +36,6 @@ def day5 : IO Unit := do
 -- Day 7
 -- experimenting with the imperative features
 def day7 : IO Unit := do
-  -- works for sample but not real input...
   let input ← IO.FS.readFile "../07/input.txt"
   let data := Array.map String.toInt! (List.toArray (input.trim.splitOn (sep := ",")))
 
@@ -87,7 +86,21 @@ def day7 : IO Unit := do
   println! s!"Day 7, Part 2 answer : {p2_ans}"
   println! ""
 
+def day9 : IO Unit := do
+  let input ← IO.FS.readFile "../09/input.txt"
+  let data := Array.map String.toInt! (List.toArray (input.trim.splitOn (sep := ",")))
+  let vm ← (Intcode.new data (input := [1]) (silent := true)).run
+  let p1_ans := vm.get!.output.get! 0
+  let vm ← (Intcode.new data (input := [2]) (silent := true)).run
+  let p2_ans := vm.get!.output.get! 0
+  assert! p1_ans = 3765554916
+  assert! p2_ans = 76642
+  println! s!"Day 9, Part 2 answer : {p1_ans}"
+  println! s!"Day 9, Part 2 answer : {p2_ans}"
+  println! ""
+
 def main : IO Unit := do
   day2
   day5
   day7
+  day9

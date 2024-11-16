@@ -14,6 +14,8 @@ structure Intcode where
   input : List Int
   /-- option to supress printing -/
   silent : Bool
+  /-- relative base -/
+  base : Int
 deriving Repr, Inhabited
 
 /-- Iterate a monad until some condtion is met -/
@@ -28,7 +30,7 @@ instance {m} [Pure m] : MonadLift Option (OptionT m) where
   monadLift := hoistOption
 
 inductive Opcode where 
-| Add 
+| Add'
 | Mult 
 | Halt 
 | In 
@@ -37,18 +39,23 @@ inductive Opcode where
 | JumpFalse 
 | Less 
 | Equal 
+| Base
 deriving Repr, DecidableEq
+
+open Opcode
 
 inductive Mode where 
 | Imm 
 | Pos 
+| Rel
 deriving Repr, DecidableEq
 
-open Opcode in
+open Mode
+
 /-- convert an integer into an opcode -/
 def Int.toOpcode? (val : Int) : Option Opcode :=
   match val with
-  | 1  => some Add
+  | 1  => some Add'
   | 2  => some Mult
   | 3  => some In
   | 4  => some Out
@@ -56,6 +63,7 @@ def Int.toOpcode? (val : Int) : Option Opcode :=
   | 6  => some JumpFalse
   | 7  => some Less
   | 8  => some Equal
+  | 9  => some Base
   | 99 => some Halt
   | _  => none
 
@@ -63,17 +71,29 @@ def Int.toOpcode? (val : Int) : Option Opcode :=
 def Opcode.len (opcode : Opcode) : Nat :=
   match opcode with
   | Halt                      => 0
-  | In | Out                  => 1
+  | In | Out | Base           => 1
   | JumpTrue | JumpFalse      => 2
-  | Add | Mult | Equal | Less => 3
+  | Add' | Mult | Equal | Less => 3
 
 /-- mode of the nth argument of an opcode -/
-def Int.getMode  (val: Int) (n : Nat) := if 0 = val / 10^(n+2) % 10 then Mode.Pos else Mode.Imm
+def Int.getMode?  (val: Int) (n : Nat) : Option Mode := 
+  match val / 10^(n+1) % 10 with
+  | 0 => some Pos
+  | 1 => some Imm
+  | 2 => some Rel
+  | _ => none
 
 namespace Intcode
 
 /-- initialize an Intcode VM with some defaults -/
-def new (data : Array Int) (input := @List.nil Int) (silent := false) : Intcode := {data, ptr := 0, halted := False, output := [], input, silent}
+def new (data : Array Int) (input := @List.nil Int) (silent := false) : Intcode := {
+  data := data ++ mkArray (2^15) 0, 
+  ptr := 0, 
+  halted := False, 
+  output := [], 
+  input, 
+  silent
+  base := 0}
 
 /-- execute one opcode -/
 def tick (vm : Intcode) : OptionT IO Intcode := do
@@ -83,15 +103,21 @@ def tick (vm : Intcode) : OptionT IO Intcode := do
   -- the last two digits are the opcode
   let opcode ← (raw_opcode % 100).toOpcode?
 
-  -- get the possible immediate values
-  -- TODO: I use zero as a default value since this is eagerly evaluated, is there a better way?
-  let imm1 ← if 1 ≤ opcode.len then (vm.data.get? (vm.ptr + 1)) else some 0
-  let imm2 ← if 2 ≤ opcode.len then (vm.data.get? (vm.ptr + 2)) else some 0
-  let imm3 ← if 3 ≤ opcode.len then (vm.data.get? (vm.ptr + 3)) else some 0
- 
-  -- TODO: better conversion here than .natAbs ?
-  let val1 ← hoistOption (if raw_opcode.getMode 0 = Mode.Imm then imm1 else if 1 ≤ opcode.len then (vm.data.get? imm1.natAbs) else some 0)
-  let val2 ← hoistOption (if raw_opcode.getMode 1 = Mode.Imm then imm2 else if 2 ≤ opcode.len then (vm.data.get? imm2.natAbs) else some 0)
+  let interp_read (pos : Nat) : OptionT IO Int := do
+    let imm ← vm.data.get? (vm.ptr + pos)
+    let mode ← raw_opcode.getMode? pos
+    match mode with
+    | Imm => some imm
+    | Pos => vm.data.get? imm.natAbs
+    | Rel => vm.data.get? (imm + vm.base).natAbs
+
+  let interp_write (pos : Nat) : OptionT IO Int := do
+    let imm ← vm.data.get? (vm.ptr + pos)
+    let mode ← raw_opcode.getMode? pos
+    match mode with
+    | Imm => none
+    | Pos => some imm
+    | Rel => some (imm + vm.base)
 
   -- a utility for the simple opcodes
   let advance := vm.ptr + opcode.len + 1
@@ -103,9 +129,9 @@ def tick (vm : Intcode) : OptionT IO Intcode := do
     pure {vm with ptr := advance, data, input}
 
   match opcode with
-  | Opcode.Add  => try_set imm3 (val1 + val2)
-  | Opcode.Mult => try_set imm3 (val1 * val2)
-  | Opcode.In   => 
+  | Add'  => try_set (← interp_write 3) ((← interp_read 1) + (← interp_read 2))
+  | Mult => try_set (← interp_write 3) ((← interp_read 1) * (← interp_read 2))
+  | In   => 
       let (val,input) ← match vm.input with
         -- case for precomputed input
         | val :: input => pure (val,input)
@@ -115,20 +141,25 @@ def tick (vm : Intcode) : OptionT IO Intcode := do
           let input ← stdin.getLine
           let val ← input.trim.toInt?
           pure (val,[])    
-      try_set imm1 val (input := input)
-  | Opcode.Out  => 
-      if vm.silent then pure () else println! s!"Intcode output: {val1}"
-      pure {vm with ptr := advance, output := val1 :: vm.output}
-  | Opcode.Halt => pure {vm with halted := True}
-  | Opcode.JumpTrue => pure {vm with ptr := if val1 ≠ 0 then val2.natAbs else advance}
-  | Opcode.JumpFalse => pure {vm with ptr := if val1 = 0 then val2.natAbs else advance}
-  | Opcode.Less => try_set imm3 (if val1 < val2 then 1 else 0)
-  | Opcode.Equal => try_set imm3 (if val1 = val2 then 1 else 0)
+      try_set (← interp_write 1) val (input := input)
+  | Out  => 
+      let out ← interp_read 1
+      if vm.silent then pure () else println! s!"Intcode output: {out}"
+      pure {vm with ptr := advance, output := out :: vm.output}
+  | Halt => pure {vm with halted := True}
+  | JumpTrue => 
+      let val2 ← interp_read 2
+      pure {vm with ptr := if (← interp_read 1) ≠ 0 then val2.natAbs else advance}
+  | JumpFalse => 
+      let val2 ← interp_read 2
+      pure {vm with ptr := if (← interp_read 1) = 0 then val2.natAbs else advance}
+  | Less => try_set (← interp_write 3) (if (← interp_read 1) < (← interp_read 2) then 1 else 0)
+  | Equal => try_set (← interp_write 3) (if (← interp_read 1) = (← interp_read 2) then 1 else 0)
+  | Base => pure {vm with ptr := advance, base := vm.base + (← interp_read 1)}
 
 /-- executes opcodes until VM halts -/
 def run := bindUntil Intcode.halted tick
 
-open Opcode in 
 partial def run_until_output (vm : Intcode) : OptionT IO (Intcode × Int) := do
   let raw_opcode ← vm.data.get? vm.ptr
   let opcode ← (raw_opcode % 100).toOpcode?
