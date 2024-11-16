@@ -70,9 +70,9 @@ def Int.toOpcode? (val : Int) : Option Opcode :=
 /-- number of arguments for each opcode -/
 def Opcode.len (opcode : Opcode) : Nat :=
   match opcode with
-  | Halt                      => 0
-  | In | Out | Base           => 1
-  | JumpTrue | JumpFalse      => 2
+  | Halt                       => 0
+  | In | Out | Base            => 1
+  | JumpTrue | JumpFalse       => 2
   | Add' | Mult | Equal | Less => 3
 
 /-- mode of the nth argument of an opcode -/
