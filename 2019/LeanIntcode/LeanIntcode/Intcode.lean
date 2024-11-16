@@ -89,7 +89,7 @@ namespace Intcode
 def new (data : Array Int) (input := @List.nil Int) (silent := false) : Intcode := {
   data := data ++ mkArray (2^15) 0, 
   ptr := 0, 
-  halted := False, 
+  halted := false, 
   output := [], 
   input, 
   silent
@@ -146,7 +146,7 @@ def tick (vm : Intcode) : OptionT IO Intcode := do
       let out ← interp_read 1
       if vm.silent then pure () else println! s!"Intcode output: {out}"
       pure {vm with ptr := advance, output := out :: vm.output}
-  | Halt => pure {vm with halted := True}
+  | Halt => pure {vm with halted := true}
   | JumpTrue => 
       let val2 ← interp_read 2
       pure {vm with ptr := if (← interp_read 1) ≠ 0 then val2.natAbs else advance}
