@@ -103,7 +103,7 @@ def tick (vm : Intcode) : OptionT IO Intcode := do
   -- the last two digits are the opcode
   let opcode ← (raw_opcode % 100).toOpcode?
 
-  let interp_read (pos : Nat) : OptionT IO Int := do
+  let interp_read (pos : Nat) : Option Int := do
     let imm ← vm.data.get? (vm.ptr + pos)
     let mode ← raw_opcode.getMode? pos
     match mode with
@@ -111,7 +111,7 @@ def tick (vm : Intcode) : OptionT IO Intcode := do
     | Pos => vm.data.get? imm.natAbs
     | Rel => vm.data.get? (imm + vm.base).natAbs
 
-  let interp_write (pos : Nat) : OptionT IO Int := do
+  let interp_write (pos : Nat) : Option Int := do
     let imm ← vm.data.get? (vm.ptr + pos)
     let mode ← raw_opcode.getMode? pos
     match mode with
