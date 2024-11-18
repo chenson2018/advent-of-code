@@ -1,4 +1,5 @@
-import LeanIntcode
+import LeanIntcode.Intcode
+import LeanIntcode.Aux
 
 -- Day 2
 def noun_verb (data : Array Int) (noun verb : Nat) := do

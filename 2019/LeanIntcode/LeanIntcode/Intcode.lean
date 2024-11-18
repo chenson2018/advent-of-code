@@ -1,5 +1,3 @@
-import LeanIntcode.Aux
-
 /-- A structure representing an Intcode virtual machine -/
 structure Intcode where
   /-- an array of integer-valued memory -/
@@ -144,7 +142,7 @@ def tick (vm : Intcode) : OptionT IO Intcode := do
       try_set (← interp_write 1) val (input := input)
   | Out  => 
       let out ← interp_read 1
-      if vm.silent then pure () else println! s!"Intcode output: {out}"
+      if !vm.silent then println! s!"Intcode output: {out}"
       pure {vm with ptr := advance, output := out :: vm.output}
   | Halt => pure {vm with halted := true}
   | JumpTrue => 
