@@ -96,21 +96,21 @@ def new (data : Array Int) (input := @List.nil Int) (silent := false) : Intcode 
 /-- execute one opcode -/
 def tick (vm : Intcode) : OptionT IO Intcode := do
   -- read the raw opcode
-  let raw_opcode ← vm.data.get? vm.ptr
+  let raw_opcode ← vm.data[vm.ptr]?
 
   -- the last two digits are the opcode
   let opcode ← (raw_opcode % 100).toOpcode?
 
   let interp_read (pos : Nat) : Option Int := do
-    let imm ← vm.data.get? (vm.ptr + pos)
+    let imm ← vm.data[vm.ptr + pos]?
     let mode ← raw_opcode.getMode? pos
     match mode with
     | Imm => some imm
-    | Pos => vm.data.get? imm.natAbs
-    | Rel => vm.data.get? (imm + vm.base).natAbs
+    | Pos => vm.data[imm.natAbs]?
+    | Rel => vm.data[(imm + vm.base).natAbs]?
 
   let interp_write (pos : Nat) : Option Int := do
-    let imm ← vm.data.get? (vm.ptr + pos)
+    let imm ← vm.data[vm.ptr + pos]?
     let mode ← raw_opcode.getMode? pos
     match mode with
     | Imm => none
@@ -159,7 +159,7 @@ def tick (vm : Intcode) : OptionT IO Intcode := do
 def run := bindUntil Intcode.halted tick
 
 partial def run_until_output (vm : Intcode) : OptionT IO (Intcode × Int) := do
-  let raw_opcode ← vm.data.get? vm.ptr
+  let raw_opcode ← vm.data[vm.ptr]?
   let opcode ← (raw_opcode % 100).toOpcode?
   let vm ← vm.tick
   if opcode = Halt ∨ opcode = Out
