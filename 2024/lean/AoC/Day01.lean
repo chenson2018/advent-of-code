@@ -13,18 +13,18 @@ def parse : Parser (Nat × Nat) := do
 def Array.counts {α : Type} [BEq α] [Hashable α] (xs : Array α) : Std.HashMap α Nat := 
   xs.foldl (λ m a => m.insert a $ m.getD a 0 + 1) Std.HashMap.empty
 
-open Prod Int in
+open Prod in
 @[aoc_main day_01]
-def part1 (args : List String) : IO Unit := do
+def day_01 (args : List String) : IO Unit := do
   let [filename] := args | throw <| IO.userError "Expecting one argument, the input file"
   let lines ← IO.FS.lines filename
   let parsed ← lines.mapM (IO.ofExcept ∘ parse.run)
   
   let (l,r) := parsed.unzip
-  let l := (l.map ofNat).qsort (Ordering.isLT $ compare · ·)
-  let r := (r.map ofNat).qsort (Ordering.isLT $ compare · ·)
+  let l := (l.map Int.ofNat).qsort (Ordering.isLT $ compare · ·)
+  let r := (r.map Int.ofNat).qsort (Ordering.isLT $ compare · ·)
   
-  let diffs := Array.zipWith l r (natAbs $ · - ·)
+  let diffs := Array.zipWith l r (Int.natAbs $ · - ·)
   let p1_ans := diffs.foldl (· + ·) 0
   assert! p1_ans = 1151792
   println! s!"Part 1 answer: {p1_ans}"
