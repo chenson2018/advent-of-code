@@ -3,7 +3,7 @@ import AoC.Utils
 open Std.Internal.Parsec.String
 open Std.Internal.Parsec
 
-def parse : Parser (Nat × Nat) := do
+def parse_01 : Parser (Nat × Nat) := do
   let a ← nat
   _ ← ws
   let b ← nat
@@ -18,7 +18,7 @@ open Prod in
 def day_01 (args : List String) : IO Unit := do
   let [filename] := args | throw <| IO.userError "Expecting one argument, the input file"
   let lines ← IO.FS.lines filename
-  let parsed ← lines.mapM (IO.ofExcept ∘ parse.run)
+  let parsed ← lines.mapM (IO.ofExcept ∘ parse_01.run)
   
   let (l,r) := parsed.unzip
   let l := (l.map Int.ofNat).qsort (Ordering.isLT $ compare · ·)
