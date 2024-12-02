@@ -7,7 +7,7 @@ def parse_02 : Parser (Array Int) := many (do let x ← int; ws; pure x)
 
 def safe_01 (xs : List Int) : Bool := 
   let diffs := xs.tail.zipWith (· - ·) xs
-  let abs_cond := diffs.all ((λ x => 1 ≤ x ∧ x ≤ 3) ∘ Int.natAbs)
+  let abs_cond := diffs.all ((· ≤ 3) ∘ Int.natAbs)
   let direction := diffs.all (· < 0) ∨ diffs.all (0 < ·) 
   abs_cond ∧ direction
 
