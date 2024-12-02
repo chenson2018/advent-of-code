@@ -11,7 +11,7 @@ def safe_01 (xs : List Int) : Bool :=
   let direction := diffs.all (· < 0) ∨ diffs.all (0 < ·) 
   abs_cond ∧ direction
 
-def List.remove_combo (xs : List α) : List (List α) := (List.range xs.length).map (xs.eraseIdx ·)
+def List.remove_combo (xs : List α) : List (List α) := (List.range xs.length).map xs.eraseIdx
 
 def safe_02 (xs : List Int) : Bool := xs.remove_combo.any safe_01
 
