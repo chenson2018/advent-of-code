@@ -16,18 +16,16 @@ open Instruction
 
 open Parser in
 def Instruction.parse : Parser Instruction := 
-  (do 
-    optSkipString "do"
-    (do _ ← optSkipString "()"; pure Enable) <|> 
-    (do _ ← optSkipString "n't()"; pure Disable)
-  ) 
+  skipString "do()" *> pure Enable
+  <|> 
+  skipString "don't()" *> pure Disable
   <|>
   (do
-    _ ← optSkipString "mul("
+    skipString "mul("
     let a ← nat
-    _ ← optSkipString ","
+    skipString ","
     let b ← nat
-    _ ← optSkipString ")"
+    skipString ")"
     pure $ Mult a b
   )
 
