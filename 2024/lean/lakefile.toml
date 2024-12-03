@@ -2,6 +2,11 @@ name = "AoC"
 version = "0.1.0"
 defaultTargets = ["aoc"]
 
+[[require]]
+name = "Regex"
+scope = "bergmannjg"
+rev = "main"
+
 [[lean_lib]]
 name = "AoC"
 
