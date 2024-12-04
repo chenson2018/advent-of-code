@@ -7,9 +7,11 @@ open Function
 -- given a list, get its diagonals in one direction
 -- op should be +/-, assumes a rectangle
 def List.diags_general [Inhabited α] (xs : List (List α)) (op : Int → Int → Int) : List (List α) :=
-  let idx := (range xs.length).product $ range xs[0]!.length
-  let m := idx.foldl (fun m (x,y) => m.alter (op x y) (λ ys => some (xs[x]![y]! :: ys.getD []))) empty
-  m.values
+  let range_x := range xs.length
+  let range_y := if h : xs.length = 0 then [] else range (xs.get ⟨0, Nat.zero_lt_of_ne_zero h⟩).length
+  let idx := product range_x range_y
+  let extend_diag x y diag := do let elem ← (←xs[x]?)[y]?; some (elem :: Option.getD diag [])
+  idx.foldl (λ m (x,y) => m.alter (op x y) (extend_diag x y)) empty |> Std.HashMap.values
 
 def List.diags [Inhabited α] (xs : List (List α)) := xs.diags_general (·+·) ++ xs.diags_general (·-·)
 def List.contiguous_sub (xs : List α) (n : Nat) := range (xs.length - n + 1) |> map (take n ∘ (xs.drop ·))
@@ -30,7 +32,7 @@ def x_mas? (xs : List (List Char)) (x y : Nat) : Option Bool := do
 open List in
 def p2 (xs : List (List Char)) := 
   let range_x := range (xs.length - 2) |> map (· + 1)
-  let range_y := range (xs[0]!.length - 2) |> map (· + 1)
+  let range_y := if h : xs.length = 0 then [] else range ((xs.get ⟨0, Nat.zero_lt_of_ne_zero h⟩).length - 2) |> map (· + 1)
   let idx := range_x.product range_y
   idx.filter ((Option.getD · false) ∘ (uncurry $ x_mas? xs)) |> List.length
 
