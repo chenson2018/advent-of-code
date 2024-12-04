@@ -36,10 +36,14 @@ def x_mas? (xs : List (List Char)) (x y : Nat) : Option Bool := do
 
 open List in
 def p2 (xs : List (List Char)) := 
-  let range_x := range (xs.length - 2) |> map (· + 1)
-  let range_y := if h : xs.length = 0 then [] else range ((xs.get ⟨0, Nat.zero_lt_of_ne_zero h⟩).length - 2) |> map (· + 1)
-  let idx := range_x.product range_y
-  idx.filter ((Option.getD · false) ∘ (uncurry $ x_mas? xs)) |> List.length
+  match xs with
+  | [] => 0
+  | ys :: _ =>
+      let range_x := range (xs.length - 2) |> map (· + 1)
+      let range_y := range (ys.length - 2) |> map (· + 1)
+      product range_x range_y
+      |> filter ((Option.getD · false) ∘ (uncurry $ x_mas? xs)) 
+      |> List.length
 
 namespace Day04
 
