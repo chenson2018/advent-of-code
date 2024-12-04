@@ -2,6 +2,15 @@ import Std
 open Std.Internal.Parsec.String
 open Std.Internal.Parsec
 
+-- this moved, just putting here for now
+namespace Function
+  @[inline]
+  def curry : (α × β → φ) → α → β → φ := fun f a b => f (a, b)
+
+  @[inline]
+  def uncurry : (α → β → φ) → α × β → φ := fun f a => f a.1 a.2
+end Function
+
 -- this is in a recent PR to Std
 namespace Std.HashMap
   variable {α : Type u} {β : Type v} {_ : BEq α} {_ : Hashable α}
