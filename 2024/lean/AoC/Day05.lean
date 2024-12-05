@@ -8,13 +8,16 @@ open Std.HashSet
 
 def Array.middle (xs : Array α) : Option α := xs[xs.size / 2]?
 
--- interesting to write it this way, had trouble proving it is the same
 def Array.middle' (xs : Array α) : Option α := 
   if h : xs.size = 0 
   then 
     none
   else 
     some $ xs.get ⟨xs.size / 2, Nat.bitwise_rec_lemma h⟩
+
+theorem middle_eq_middle' (xs : Array α) : xs.middle = xs.middle' := by
+  let {toList := xs} := xs
+  induction xs <;> simp [Array.middle, Array.middle']
 
 namespace Day05
 
