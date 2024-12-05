@@ -6,13 +6,15 @@ open Std
 open Std.HashMap
 open Std.HashSet
 
--- Inhabited just for simplicity, could be Option
-def Array.middle [Inhabited α] (xs : Array α) : α := 
+def Array.middle (xs : Array α) : Option α := xs[xs.size / 2]?
+
+-- interesting to write it this way, had trouble proving it is the same
+def Array.middle' (xs : Array α) : Option α := 
   if h : xs.size = 0 
   then 
-    default
+    none
   else 
-    xs.get ⟨xs.size / 2, Nat.bitwise_rec_lemma h⟩
+    some $ xs.get ⟨xs.size / 2, Nat.bitwise_rec_lemma h⟩
 
 namespace Day05
 
@@ -51,10 +53,10 @@ def day_05 (args : List String) : IO Unit := do
 
   let (valid,invalid) := updates.partition (valid_update? map ∘ Array.toList) 
 
-  let p1_ans := valid |>.map Array.middle |>.foldl (·+·) 0
+  let p1_ans := valid |>.map (flip Option.getD 0 ∘ Array.middle) |>.foldl (·+·) 0
   assert! p1_ans = 5166
   println! s!"Part 1 answer: {p1_ans}"
 
-  let p2_ans := invalid |>.map (rules_qsort map) |>.map Array.middle |>.foldl (·+·) 0
+  let p2_ans := invalid |>.map (rules_qsort map) |>.map (flip Option.getD 0 ∘ Array.middle) |>.foldl (·+·) 0
   assert! p2_ans = 4679
   println! s!"Part 2 answer: {p2_ans}"
