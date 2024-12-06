@@ -36,7 +36,7 @@ structure State where
   range_x : Nat
   range_y : Nat
   halted : Bool
-deriving Repr
+deriving Repr, Inhabited
 
 -- assume correct shape, formatting, etc.
 open List in
@@ -67,9 +67,13 @@ def State.tick (state : State) : State :=
     | some obs,_ => (uncurry dir.op.next obs,false)
   {state with x, y, halted, visited := (x,y) :: visited, dir := dir.rotate}
 
-partial def State.tick_all (state : State) : State :=
-  if state.halted then state else state.tick.tick_all
+def State.tick_all_gas (state : State) (gas : Nat) := 
+  match gas, state.halted with
+  | _,true => some state
+  | gas'+1,_ => state.tick.tick_all_gas gas'
+  | 0,_ => none
 
+-- assumes either x or y is equal
 def between (a b : Nat × Nat) := 
   let (x ,y ) := a
   let (x',y') := b
@@ -88,6 +92,11 @@ def State.visited_unique (state : State) :=
   let betweens := pairs.map (uncurry between)
   betweens |>.join |> Std.HashSet.ofList |>.size
 
+def p2 (state : State) (gas_guess : Nat) :=
+ let new_obs := List.product (List.range state.range_x) (List.range state.range_y) |>.filter (· != (state.x,state.y))
+ let end_states := new_obs.map (λ new => {state with obstacles := new :: state.obstacles}.tick_all_gas gas_guess)
+ end_states |>.filter Option.isNone |>.length
+
 @[aoc_main day_06]
 def day_06 (args : List String) : IO Unit := do
   let [filename] := args | throw <| IO.userError "Expecting one argument, the input file"
@@ -95,6 +104,13 @@ def day_06 (args : List String) : IO Unit := do
   let grid := text.toList.map String.toList
   let state := State.from_list grid
 
-  let p1_ans := state.tick_all.visited_unique
+  -- a bit of a hack, so I don't have to properly check repeating states
+  let gas_guess := 200
+
+  let p1_ans := (state.tick_all_gas gas_guess).get!.visited_unique
   assert! p1_ans = 4559
   println! s!"Part 1 answer: {p1_ans}"
+
+  let p2_ans := p2 state 200
+  assert! p2_ans = 1604
+  println! s!"Part 2 answer: {p2_ans}"
