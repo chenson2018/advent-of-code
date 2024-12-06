@@ -8,7 +8,7 @@ open Prod
 
 namespace Day06
 
-inductive Dir | N | E | S | W deriving Repr, Inhabited
+inductive Dir | N | E | S | W deriving Repr, Inhabited, DecidableEq
 open Dir
 
 def Dir.rotate (dir : Dir) :=
@@ -30,7 +30,7 @@ def Dir.next (x y : Nat) (dir : Dir) : Nat × Nat :=
 structure State where
   x : Nat
   y : Nat
-  visited : List (Nat × Nat)
+  visited : List (Dir × Nat × Nat)
   obstacles : List (Nat × Nat)
   dir : Dir
   range_x : Nat
@@ -48,7 +48,7 @@ def State.from_list (grid : List (List Char)) : State :=
   let guards := with_idx.filter ((·=='^') ∘ fst)
   let (_,x,y) := guards[0]!
   let obstacles := with_idx.filter ((·=='#') ∘ fst) |>.map snd
-  {x, y, visited := [(x,y)], obstacles, dir := N, halted := false, range_x, range_y}
+  {x, y, visited := [(N,x,y)], obstacles, dir := N, halted := false, range_x, range_y}
 
 def State.tick (state : State) : State := 
   let {x,y,visited,obstacles,dir,range_x,range_y,..} := state
@@ -65,13 +65,17 @@ def State.tick (state : State) : State :=
     | none, W => ((x,0),true)
     | none, E => ((x,range_y - 1),true)
     | some obs,_ => (uncurry dir.op.next obs,false)
-  {state with x, y, halted, visited := (x,y) :: visited, dir := dir.rotate}
+  {state with x, y, halted, visited := (dir.rotate,x,y) :: visited, dir := dir.rotate}
 
-def State.tick_all_gas (state : State) (gas : Nat) := 
-  match gas, state.halted with
-  | _,true => some state
-  | gas'+1,_ => state.tick.tick_all_gas gas'
-  | 0,_ => none
+partial def State.tick_all (state : State) :=
+  if state.halted 
+  then 
+    some state
+  else if (state.dir,state.x,state.y) ∈ state.visited.tail
+  then
+    none
+  else 
+    state.tick.tick_all
 
 -- assumes either x or y is equal
 def between (a b : Nat × Nat) := 
@@ -88,13 +92,14 @@ def between (a b : Nat × Nat) :=
     List.range (high-low+1) |>.map (· + low) |>.map (·,y)
 
 def State.visited_unique (state : State) := 
-  let pairs := state.visited.zip state.visited.tail
+  let idx := state.visited.map snd
+  let pairs := idx.zip idx.tail
   let betweens := pairs.map (uncurry between)
   betweens |>.join |> Std.HashSet.ofList |>.size
 
-def p2 (state : State) (gas_guess : Nat) :=
+def p2 (state : State) :=
  let new_obs := List.product (List.range state.range_x) (List.range state.range_y) |>.filter (· != (state.x,state.y))
- let end_states := new_obs.map (λ new => {state with obstacles := new :: state.obstacles}.tick_all_gas gas_guess)
+ let end_states := new_obs.map (λ new => {state with obstacles := new :: state.obstacles}.tick_all)
  end_states |>.filter Option.isNone |>.length
 
 @[aoc_main day_06]
@@ -104,13 +109,10 @@ def day_06 (args : List String) : IO Unit := do
   let grid := text.toList.map String.toList
   let state := State.from_list grid
 
-  -- a bit of a hack, so I don't have to properly check repeating states
-  let gas_guess := 200
-
-  let p1_ans := (state.tick_all_gas gas_guess).get!.visited_unique
+  let p1_ans := state.tick_all.get!.visited_unique
   assert! p1_ans = 4559
   println! s!"Part 1 answer: {p1_ans}"
 
-  let p2_ans := p2 state 200
+  let p2_ans := p2 state
   assert! p2_ans = 1604
   println! s!"Part 2 answer: {p2_ans}"
