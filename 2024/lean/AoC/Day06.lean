@@ -58,13 +58,13 @@ def State.tick (state : State) : State :=
     | S => obstacles.filter (λ (x',y') => x  < x' ∧ y = y') |>.argmin fst
     | W => obstacles.filter (λ (x',y') => y' < y  ∧ x = x') |>.argmax snd
     | E => obstacles.filter (λ (x',y') => y  < y' ∧ x = x') |>.argmin snd
-  let ((x,y),halted) :=
+  let (halted,x,y) :=
     match maybe_obs, dir with
-    | none, N => ((0,y),true)
-    | none, S => ((range_x - 1, y),true)
-    | none, W => ((x,0),true)
-    | none, E => ((x,range_y - 1),true)
-    | some obs,_ => (uncurry dir.op.next obs,false)
+    | none, N => (true,0,y)
+    | none, S => (true,range_x - 1, y)
+    | none, W => (true,x,0)
+    | none, E => (true,x,range_y - 1)
+    | some obs,_ => (false, uncurry dir.op.next obs)
   {state with x, y, halted, visited := (dir.rotate,x,y) :: visited, dir := dir.rotate}
 
 partial def State.tick_all (state : State) :=
