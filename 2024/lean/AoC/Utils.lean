@@ -44,3 +44,19 @@ def nat : Parser Nat := do
 def int : Parser Int := do
   let n ← nat
   pure (Int.ofNat n)
+
+-- from Mathlib
+namespace List
+  variable {α β : Type}
+  variable (r : α → α → Prop) [DecidableRel r] {l : List α} {o : Option α} {a : α}
+  variable [LT β] [@DecidableRel β (· < ·)] {f : α → β} {l : List α} {a m : α}
+
+  def argAux (a : Option α) (b : α) : Option α :=
+    Option.casesOn a (some b) fun c => if r b c then some b else some c
+
+  def argmax (f : α → β) (l : List α) : Option α :=
+    l.foldl (argAux fun b c => f c < f b) none
+
+  def argmin (f : α → β) (l : List α) :=
+    l.foldl (argAux fun b c => f b < f c) none
+end List
