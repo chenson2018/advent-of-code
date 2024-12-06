@@ -81,15 +81,11 @@ partial def State.tick_all (state : State) :=
 def between (a b : Nat × Nat) := 
   let (x ,y ) := a
   let (x',y') := b
-  if x = x' 
-  then 
-    let high := max y y'
-    let low  := min y y'
-    List.range (high-low+1) |>.map (· + low) |>.map (x,·)
+  let line high low := List.range (high-low+1) |>.map (· + low)
+  if x = x' then 
+    line (max y y') (min y y') |>.map (x,·)
   else 
-    let high := max x x'
-    let low  := min x x'
-    List.range (high-low+1) |>.map (· + low) |>.map (·,y)
+    line (max x x') (min x x') |>.map (·,y)
 
 def State.visited_unique (state : State) := 
   let idx := state.visited.map snd
