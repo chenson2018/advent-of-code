@@ -3,11 +3,6 @@ import AoC.Utils
 open Std.Internal.Parsec.String
 open Std.Internal.Parsec
 
-def List.combo_n (options : List α) (n : Nat) : List (List α) :=
-  match n with
-  | 0 => options.map ([·])
-  | n'+1 => options.map (λ o => options.combo_n n' |>.map (o :: ·)) |>.join
-
 namespace Day07
 
 structure Calibration where
@@ -26,8 +21,18 @@ def Calibration.eval (cal : Calibration) (ops : List (Nat → Nat → Nat)) : Na
   | [] => 0
   | init :: nums => ops.zipWith (flip · $ ·) nums |>.foldl (flip (· $ ·)) init
 
-def Calibration.valid (ops : List (Nat → Nat → Nat)) (cal : Calibration) : Bool := 
-  cal.lhs ∈ (ops.combo_n (cal.rhs.length - 1) |>.map cal.eval)
+def Calibration.combos (cal : Calibration) (ops : List (Nat → Nat → Nat)) : List Nat :=
+  match cal.rhs with
+  | [] => []
+  | init :: tl => aux init ops tl
+  where  
+    aux (acc : Nat) (ops : List (Nat → Nat → Nat)) (nums : List Nat) := 
+      match nums with
+      | [] => [acc]
+      | hd :: tl => ops.map (λ op : Nat → Nat → Nat => op acc hd) |>.map (aux . ops tl) |>.join
+
+def Calibration.valid (ops : List (Nat → Nat → Nat)) (cal : Calibration) : Bool :=
+  cal.lhs ∈ cal.combos ops
 
 -- modified from mathlib
 def Nat.log (b : Nat) : Nat → Nat
