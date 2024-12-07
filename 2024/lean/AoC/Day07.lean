@@ -16,11 +16,6 @@ def parse : Parser Calibration := do
   let rhs ← many (ws *> nat)
   pure {lhs, rhs := rhs.toList}
 
-def Calibration.eval (cal : Calibration) (ops : List (Nat → Nat → Nat)) : Nat := 
-  match cal.rhs with
-  | [] => 0
-  | init :: nums => ops.zipWith (flip · $ ·) nums |>.foldl (flip (· $ ·)) init
-
 def Calibration.combos (cal : Calibration) (ops : List (Nat → Nat → Nat)) : List Nat :=
   match cal.rhs with
   | [] => []
