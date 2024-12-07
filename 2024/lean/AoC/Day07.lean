@@ -29,7 +29,7 @@ def Calibration.combos (cal : Calibration) (ops : List (Nat → Nat → Nat)) : 
     aux (acc : Nat) (ops : List (Nat → Nat → Nat)) (nums : List Nat) := 
       match nums with
       | [] => [acc]
-      | hd :: tl => ops.map (λ op : Nat → Nat → Nat => op acc hd) |>.map (aux . ops tl) |>.join
+      | hd :: tl => ops.map (· acc hd) |>.map (aux . ops tl) |>.join
 
 def Calibration.valid (ops : List (Nat → Nat → Nat)) (cal : Calibration) : Bool :=
   cal.lhs ∈ cal.combos ops
