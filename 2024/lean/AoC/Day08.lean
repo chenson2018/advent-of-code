@@ -34,9 +34,9 @@ def p1_antinodes (_ : Grid) (pair : (Int × Int) × (Int × Int)) :=
   -- sort into left/right
   let ((lx,ly),(rx,ry)) := if x ≤ x' then ((x,y),(x',y')) else ((x',y'),(x,y))
   -- absolute slopes
-  let dx : Int := (rx - lx).natAbs
+  let dx : Int :=  rx - lx
   let dy : Int := (ry - ly).natAbs
-  -- condition on positiove/negative slopes  
+  -- condition on positive/negative slopes  
   let anti_lx := lx - dx
   let anti_rx := rx + dx
   let (anti_ly,anti_ry) := if ly ≤ ry then (ly - dy,ry + dy) else (ly + dy,ry - dy)
