@@ -42,6 +42,7 @@ def p1_antinodes (_ : Grid) (pair : (Int × Int) × (Int × Int)) :=
   let (anti_ly,anti_ry) := if ly ≤ ry then (ly - dy,ry + dy) else (ly + dy,ry - dy)
   [(anti_lx,anti_ly), (anti_rx,anti_ry)]
 
+-- TODO: a more specific version of this would terminate, but was annoying to prove
 partial def iterWhile {α : Type} (f : α → α) (cond : α → Bool) (a : α) : List α := 
     if cond a then a :: iterWhile f cond (f a) else []
 
