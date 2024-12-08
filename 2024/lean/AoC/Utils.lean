@@ -60,3 +60,7 @@ namespace List
   def argmin (f : α → β) (l : List α) :=
     l.foldl (argAux fun b c => f b < f c) none
 end List
+
+-- this isn't being picked up for some reason... maybe in a recent PR
+instance : Hashable Char where
+  hash c := c.val.toUInt64
