@@ -18,7 +18,7 @@ structure Block where
   length : Nat
 deriving Repr
 
-def List.toBlock := aux 0 where
+def List.toBlock (xs : List Nat) := aux 0 xs |>.filter (·.length > 0) where
   aux (id : Nat) (xs : List Nat) : List Block :=
     match xs with
     | [] => []
@@ -84,8 +84,7 @@ def main (args : List String) : IO Unit := do
   let text ← IO.FS.readFile filename 
   let nums ← Parser.run (many digit') text |> IO.ofExcept
   let nums := nums.toList
-
-  let conts := List.toBlock nums |>.filter ((·>0) ∘ Block.length)
+  let conts := List.toBlock nums
 
   let p1_ans := p1 conts |> checksum
   assert! p1_ans = 6415184586041
