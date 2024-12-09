@@ -33,9 +33,6 @@ partial def p1_calc (front back : List Block) (acc limit : Nat) : List Block :=
     match front, back with
     -- shouldn't reach these...
     | [], _ | _, [] => []
-    -- throw out empty blocks
-    | {length := 0, ..} :: ftl, back => p1_calc ftl back acc limit
-    | front, {length := 0, ..} :: btl => p1_calc front btl acc limit
     -- throw out spaces at the back
     | front, {id := none, ..} :: btl => p1_calc front btl acc limit
     -- pass along files at the front
