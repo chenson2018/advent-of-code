@@ -2,11 +2,6 @@ import AoC.CmdAttr
 import AoC.Utils
 open Std.Internal.Parsec.String
 open Std.Internal.Parsec
-open Prod Function
-open Std
-
-instance [Repr α] : ToString α where
-  toString := Std.Format.pretty ∘ repr
 
 def List.tryInsertMany (xs : List α) (f : α → Option (List α)) : Option (List α) :=
   match xs with
