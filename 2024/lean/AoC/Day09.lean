@@ -8,6 +8,14 @@ open Std
 instance [Repr α] : ToString α where
   toString := Std.Format.pretty ∘ repr
 
+def List.tryInsertMany (xs : List α) (f : α → Option (List α)) : Option (List α) :=
+  match xs with
+  | [] => none
+  | hd :: tl =>
+      match f hd with
+      | some ys => some (ys ++ tl)
+      | none => do hd :: (← tl.tryInsertMany f)
+
 namespace Day09
 
 structure Contiguous where
@@ -54,12 +62,29 @@ def p1 (xs : List Contiguous) : List Contiguous :=
   let n_elems := xs.map (λ c => if c.id.isSome then c.length else 0) |>.foldl (·+·) 0
   p1_calc xs xs.reverse 0 n_elems
 
-def checksum (xs : List Contiguous) := do 
-  let ids ← xs.mapM Contiguous.id
+def checksum (xs : List Contiguous) : Nat :=
+  let ids := xs.map (flip Option.getD 0 ∘ Contiguous.id)
   let lengths := xs.map Contiguous.length
   let id_rep := lengths.zipWith List.replicate ids |>.join
   let check := id_rep.foldl (λ (acc,pos) id => (acc + pos * id,pos+1)) (0,0)
-  pure check.fst
+  check.fst
+
+def Contiguous.merge (l r : Contiguous) : Option (List Contiguous) := 
+  match l, r with
+  | {id := some _, length := l_len}, {id := none, length := r_len} =>
+      if l_len ≤ r_len then
+        some $ [l, {id := none, length := r_len - l_len}].filter ((·>0) ∘ Contiguous.length)
+      else 
+        none
+  | _, _ => none
+
+partial def p2 (xs : List Contiguous) : List Contiguous := 
+  match xs with 
+  | [] => []
+  | last :: front_rev =>
+      match front_rev.reverse.tryInsertMany (Contiguous.merge last) with
+      | none => last :: p2 front_rev
+      | some new_front => {last with id := none} :: p2 new_front.reverse
 
 @[aoc_main day_09]
 def main (args : List String) : IO Unit := do
@@ -68,8 +93,12 @@ def main (args : List String) : IO Unit := do
   let nums ← Parser.run (many digit') text |> IO.ofExcept
   let nums := nums.toList
 
-  let conts := List.toContiguous nums
+  let conts := List.toContiguous nums |>.filter ((·>0) ∘ Contiguous.length)
 
-  let p1_ans := p1 conts |> checksum |>.get!
+  let p1_ans := p1 conts |> checksum
   assert! p1_ans = 6415184586041
   println! s!"Part 1 answer: {p1_ans}"
+
+  let p2_ans := (p2 conts.reverse).reverse |> checksum
+  assert! p2_ans = 6436819084274 
+  println! s!"Part 2 answer: {p2_ans}"
