@@ -13,19 +13,19 @@ def List.tryInsertMany (xs : List α) (f : α → Option (List α)) : Option (Li
 
 namespace Day09
 
-structure Contiguous where
+structure Block where
   id : Option Nat
   length : Nat
 deriving Repr
 
-def List.toContiguous := aux 0 where
-  aux (id : Nat) (xs : List Nat) : List Contiguous :=
+def List.toBlock := aux 0 where
+  aux (id : Nat) (xs : List Nat) : List Block :=
     match xs with
     | [] => []
     | [length] => [{id, length}]
     | l_files :: l_space :: tl => {id, length := l_files} :: {id := none, length := l_space} :: aux (id + 1) tl
 
-partial def p1_calc (front back : List Contiguous) (acc limit : Nat) : List Contiguous := 
+partial def p1_calc (front back : List Block) (acc limit : Nat) : List Block := 
   -- the last entry usually needs to be cut off, do it here so we don't have to repeat traversal
   let trunc x := if limit ≤ acc + x then limit - acc else x
 
@@ -53,31 +53,31 @@ partial def p1_calc (front back : List Contiguous) (acc limit : Nat) : List Cont
   else
     []
 
-def p1 (xs : List Contiguous) : List Contiguous :=
+def p1 (xs : List Block) : List Block :=
   let n_elems := xs.map (λ c => if c.id.isSome then c.length else 0) |>.foldl (·+·) 0
   p1_calc xs xs.reverse 0 n_elems
 
-def checksum (xs : List Contiguous) : Nat :=
-  let ids := xs.map (flip Option.getD 0 ∘ Contiguous.id)
-  let lengths := xs.map Contiguous.length
+def checksum (xs : List Block) : Nat :=
+  let ids := xs.map (flip Option.getD 0 ∘ Block.id)
+  let lengths := xs.map Block.length
   let id_rep := lengths.zipWith List.replicate ids |>.join
   let check := id_rep.foldl (λ (acc,pos) id => (acc + pos * id,pos+1)) (0,0)
   check.fst
 
-def Contiguous.merge (l r : Contiguous) : Option (List Contiguous) := 
+def Block.merge (l r : Block) : Option (List Block) := 
   match l, r with
   | {id := some _, length := l_len}, {id := none, length := r_len} =>
       if l_len ≤ r_len then
-        some $ [l, {id := none, length := r_len - l_len}].filter ((·>0) ∘ Contiguous.length)
+        some $ [l, {id := none, length := r_len - l_len}].filter ((·>0) ∘ Block.length)
       else 
         none
   | _, _ => none
 
-partial def p2 (xs : List Contiguous) : List Contiguous := 
+partial def p2 (xs : List Block) : List Block := 
   match xs with 
   | [] => []
   | last :: front_rev =>
-      match front_rev.reverse.tryInsertMany (Contiguous.merge last) with
+      match front_rev.reverse.tryInsertMany (Block.merge last) with
       | none => last :: p2 front_rev
       | some new_front => {last with id := none} :: p2 new_front.reverse
 
@@ -88,7 +88,7 @@ def main (args : List String) : IO Unit := do
   let nums ← Parser.run (many digit') text |> IO.ofExcept
   let nums := nums.toList
 
-  let conts := List.toContiguous nums |>.filter ((·>0) ∘ Contiguous.length)
+  let conts := List.toBlock nums |>.filter ((·>0) ∘ Block.length)
 
   let p1_ans := p1 conts |> checksum
   assert! p1_ans = 6415184586041
