@@ -57,7 +57,7 @@ def p1 (xs : List Block) : List Block :=
 def checksum (xs : List Block) : Nat :=
   let ids := xs.map (flip Option.getD 0 ∘ Block.id)
   let lengths := xs.map Block.length
-  let id_rep := lengths.zipWith List.replicate ids |>.join
+  let id_rep := lengths.zipWith List.replicate ids |>.flatten
   let check := id_rep.foldl (λ (acc,pos) id => (acc + pos * id,pos+1)) (0,0)
   check.fst
 

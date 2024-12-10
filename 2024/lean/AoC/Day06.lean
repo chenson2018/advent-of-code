@@ -44,7 +44,7 @@ def State.from_list (grid : List (List Char)) : State :=
   let range_x := grid.length 
   let range_y := grid[0]!.length
   let idx := product (range range_x)  (range range_y)
-  let with_idx:= grid.join.zip idx
+  let with_idx:= grid.flatten.zip idx
   let guards := with_idx.filter ((·=='^') ∘ fst)
   let (_,x,y) := guards[0]!
   let obstacles := with_idx.filter ((·=='#') ∘ fst) |>.map snd
@@ -91,7 +91,7 @@ def State.visited_unique (state : State) :=
   let idx := state.visited.map snd
   let pairs := idx.zip idx.tail
   let betweens := pairs.map (uncurry between)
-  betweens |>.join |> Std.HashSet.ofList |>.size
+  betweens |>.flatten |> Std.HashSet.ofList |>.size
 
 def p2 (state : State) :=
  let new_obs := List.product (List.range state.range_x) (List.range state.range_y) |>.filter (· != (state.x,state.y))

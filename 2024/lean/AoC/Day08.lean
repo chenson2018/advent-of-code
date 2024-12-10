@@ -21,7 +21,7 @@ def Grid.ofList (grid : List (List Char)) : Grid :=
   let range_x := grid.length 
   let range_y := grid[0]!.length
   let idx := product (range range_x |>.map Int.ofNat)  (range range_y |>.map Int.ofNat)
-  let with_idx := idx.zip grid.join
+  let with_idx := idx.zip grid.flatten
   let antennas := with_idx.filter ((·!='.') ∘ Prod.snd)
   let frequencies := antennas.map snd |> Std.HashSet.ofList |>.toList
   {antennas,frequencies,range_x,range_y}
@@ -47,10 +47,10 @@ def Grid.antinodes (grid : Grid) (calc_anti : Grid → (Int × Int) × (Int × I
   grid.frequencies
     -- -- get all combinations of equal frequency
     |>.map (λ freq => grid.antennas.filter ((·==freq) ∘ snd) |>.map fst)
-    |>.map List.pairs |>.join
+    |>.map List.pairs |>.flatten
     -- -- calculate the antinodes
     |>.map (calc_anti grid)
-    |>.join 
+    |>.flatten 
     -- remove duplicates and points outside the grid
     |>.filter (λ (x,y) => 0 ≤ x ∧ 0 ≤ y ∧ x < grid.range_x ∧ y < grid.range_y)
     |> Std.HashSet.ofList

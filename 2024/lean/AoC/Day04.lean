@@ -57,7 +57,7 @@ def day_03 (args : List String) : IO Unit := do
   let p1_ans := 
     mat ++ mat.transpose ++ mat.diags 
     |> map (contiguous_sub · 4) 
-    |> join |> filter (fun xs => xs = "XMAS".toList ∨ xs = "XMAS".toList.reverse)
+    |> flatten |> filter (fun xs => xs = "XMAS".toList ∨ xs = "XMAS".toList.reverse)
     |> length
   assert! p1_ans = 2583
   println! s!"Part 1 answer: {p1_ans}"
