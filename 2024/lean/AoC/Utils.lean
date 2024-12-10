@@ -35,3 +35,6 @@ namespace List
   def argmin (f : α → β) (l : List α) :=
     l.foldl (argAux fun b c => f b < f c) none
 end List
+
+def Array.product (l₁ : Array α) (l₂ : Array β) : Array (α × β) := 
+  l₁.flatMap fun a => l₂.map (Prod.mk a)
