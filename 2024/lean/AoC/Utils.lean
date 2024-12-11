@@ -38,3 +38,11 @@ end List
 
 def Array.product (l₁ : Array α) (l₂ : Array β) : Array (α × β) := 
   l₁.flatMap fun a => l₂.map (Prod.mk a)
+
+--from Mathlib
+/-- Iterate a function. -/
+def Nat.iterate {α : Sort u} (op : α → α) : Nat → α → α
+  | 0, a => a
+  | succ k, a => iterate op k (op a)
+
+notation:max f "^["n"]" => Nat.iterate f n
