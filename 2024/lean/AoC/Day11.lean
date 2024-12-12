@@ -18,13 +18,8 @@ def memo [BEq α] [Hashable α] (a : α) (compute : Memo α β) : Memo α β := 
       modify (·.insert a b)
       pure b
 
-def List.foldl_memo {α β : Type} [BEq α] [Hashable α] := aux [] where
-  aux (acc : List β) (xs : List α) (f : α → Memo α β) (m : HashMap α β) : List β × HashMap α β :=
-   match xs with
-   | [] => (acc,m)
-   | a :: tl =>
-       let (b,m) := f a |>.run m
-       aux (b :: acc) tl f m
+def List.map_memo [BEq α] [Hashable α] (xs : List α) (f : α → Memo α β) (m : HashMap α β) : List β × HashMap α β :=
+    xs.foldl (λ (acc,m) a ↦ let (b,m) := f a |>.run m; (b :: acc, m)) ([],m)
 
 namespace Day11
 
@@ -50,8 +45,8 @@ def main (args : List String) : IO Unit := do
   let input ← text.splitOn " " |>.mapM nat.run  |> IO.ofExcept
 
   -- we can reuse part 1 for part 2!!!
-  let (p1_counts,cache) := input.map (25,·) |>.foldl_memo (uncurry blink_memo) HashMap.empty
-  let (p2_counts,_)     := input.map (75,·) |>.foldl_memo (uncurry blink_memo) cache
+  let (p1_counts,cache) := input.map (25,·) |>.map_memo (uncurry blink_memo) HashMap.empty
+  let (p2_counts,_)     := input.map (75,·) |>.map_memo (uncurry blink_memo) cache
 
   let p1_ans := p1_counts.sum
   assert! p1_ans = 190865
