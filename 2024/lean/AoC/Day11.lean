@@ -19,7 +19,7 @@ def memo [BEq α] [Hashable α] (a : α) (compute : Memo α β) : Memo α β := 
       pure b
 
 def List.map_memo [BEq α] [Hashable α] (xs : List α) (f : α → Memo α β) (m : HashMap α β) : List β × HashMap α β :=
-    xs.foldl (λ (acc,m) a ↦ let (b,m) := f a |>.run m; (b :: acc, m)) ([],m)
+    xs.foldl (λ (acc,m) a ↦ f a |>.run m |>.map (· :: acc) id) ([],m)
 
 namespace Day11
 
