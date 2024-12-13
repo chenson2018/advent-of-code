@@ -1,6 +1,3 @@
--- import Mathlib.Algebra.EuclideanDomain.Defs
--- import Mathlib.Algebra.EuclideanDomain.Int
--- import Mathlib.Data.Int.Range
 import AoC.CmdAttr
 import AoC.Utils
 open Std.Internal.Parsec.String
