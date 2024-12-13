@@ -37,9 +37,7 @@ def Int.div_exact (a b : Int) : Option Int :=
 -- ax + by = p
 -- cx + dy = q
 def solve (a b p c d q : Int) := do
-  let y_top := c*p - a*q
-  let y_bot := c*b - a*d
-  let y ← Int.div_exact y_top y_bot
+  let y ← Int.div_exact (c*p - a*q) (c*b - a*d)
   let x ← Int.div_exact (p - b*y) a
   pure (x,y)
 
