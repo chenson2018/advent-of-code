@@ -31,7 +31,7 @@ def Robot.move (r : Robot) (xlim ylim s : Nat) : Robot :=
   let py := (r.py + r.vy * s) % ylim
   {r with px, py}
 
-def p1 (robots : Array Robot) (xlim ylim s : Nat) := 
+def safety_factor (robots : Array Robot) (xlim ylim s : Nat) := 
   let moved := robots.map (·.move xlim ylim s)
   let xmid : Int := xlim / 2
   let ymid : Int := ylim / 2
@@ -77,7 +77,7 @@ def main (args : List String) : IO Unit := do
   let xlim := 101
   let ylim := 103
 
-  let p1_ans := p1 robots xlim ylim 100
+  let p1_ans := safety_factor robots xlim ylim 100
   assert! p1_ans = 219150360
   println! s!"Part 1 answer: {p1_ans}"
 
