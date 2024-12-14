@@ -17,8 +17,10 @@ def nat : Parser Nat := do
     return (← many1 digit').foldl (init := 0) (fun a d => 10 * a + d)
 
 def int : Parser Int := do
-  let n ← nat
-  pure (Int.ofNat n)
+  let neg ← (skipChar '-' *> pure true) <|> pure false
+  let sign := if neg then -1 else 1
+  let n <- nat
+  pure $ sign * n
 
 -- from Mathlib
 namespace List
