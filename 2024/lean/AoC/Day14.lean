@@ -55,10 +55,10 @@ def print_robots (robots : Array Robot) (xlim ylim : Nat) : IO Unit := do
 -- my guess was that the tree would have a lot of robots in a row
 -- arrangements can only repeat at max xlim*ylim
 def lines (robots : Array Robot) := 
-  let x_idx := robots.map (Robot.px) |>.toList
+  let x_idx := robots.map Robot.px |>.toList
   let x_max := x_idx.max?.getD 0 |>.toNat
   let x_line := List.range x_max |>.map (λ x ↦ x_idx.count ↑x)
-  let y_idx := robots.map (Robot.py) |>.toList
+  let y_idx := robots.map Robot.py |>.toList
   let y_max := y_idx.max?.getD 0 |>.toNat
   let y_line := List.range y_max |>.map (λ y ↦ y_idx.count ↑y)
   x_line.max?.getD 0 + y_line.max?.getD 0
