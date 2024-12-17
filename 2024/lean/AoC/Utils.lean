@@ -22,6 +22,13 @@ def int : Parser Int := do
   let n <- nat
   pure $ sign * n
 
+def fin (n : Nat) : Parser (Fin n) := do
+  let n' ← nat
+  if h : n' < n then
+    pure $ Fin.mk n' h
+  else
+    fail s!"{n'} not less than {n}, cannot construct Fin {n}"
+
 -- from Mathlib
 namespace List
   variable {α β : Type}
