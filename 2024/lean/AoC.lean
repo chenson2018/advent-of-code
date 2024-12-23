@@ -15,6 +15,7 @@ import AoC.Day13
 import AoC.Day14
 import AoC.Day15
 import AoC.Day17
+import AoC.Day23
 
 def main (args : List String) : IO Unit := do
   aoc_dispatch% args
