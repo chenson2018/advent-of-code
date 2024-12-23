@@ -14,7 +14,7 @@ def parse : Parser (String × String) := do
   let r ← take 2
   pure (l,r)
 
-def build_map (xs : Array (String × String)) : HashMap String (List String) := 
+def build_map [BEq α] [Hashable α] (xs : Array (α × α)) : HashMap α (List α) := 
   xs.foldl 
   (λ m (k,v) ↦ 
     m.alter k (λ val ↦ 
